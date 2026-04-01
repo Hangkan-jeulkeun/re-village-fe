@@ -106,6 +106,8 @@ export default async function Page() {
 ## 기능 명세
 - 기능 명세는 `docs/features/` 에 마크다운으로 관리
 - 브랜치 생성 시 관련 명세 파일을 읽고 브랜치 설명을 자동 생성할 것
+- 스펙이 변경되면 반드시 `docs/features/` 를 먼저 수정한 뒤 코드를 수정할 것
+- 코드와 스펙이 충돌하면 스펙을 기준으로 삼을 것
 
 ## 금지 사항
 - `console.log` 커밋 금지
