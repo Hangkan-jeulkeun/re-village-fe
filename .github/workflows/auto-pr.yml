@@ -1,0 +1,63 @@
+name: Auto Create PR
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create PR if not exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="${{ github.ref_name }}"
+
+          # Skip if PR already exists
+          EXISTING=$(gh pr list --head "$BRANCH" --json number -q '.[0].number' 2>/dev/null)
+          if [ -n "$EXISTING" ]; then
+            echo "PR #$EXISTING already exists for $BRANCH"
+            exit 0
+          fi
+
+          # Generate title from branch name
+          # feat/add-login → feat: add login
+          TYPE=$(echo "$BRANCH" | grep -oE '^(feat|fix|docs|style|refactor|test|chore)' || echo "")
+          DESCRIPTION=$(echo "$BRANCH" | sed 's|^[^/]*/||' | tr '-' ' ')
+
+          if [ -n "$TYPE" ]; then
+            TITLE="$TYPE: $DESCRIPTION"
+          else
+            TITLE="$DESCRIPTION"
+          fi
+
+          # Generate body from commit messages since main
+          BODY=$(git log origin/main..HEAD --pretty=format:"- %s" 2>/dev/null)
+          if [ -z "$BODY" ]; then
+            BODY="- $TITLE"
+          fi
+
+          FULL_BODY="## Changes
+$BODY
+
+## Checklist
+- [ ] Code reviewed
+- [ ] Tests passed"
+
+          gh pr create \
+            --title "$TITLE" \
+            --body "$FULL_BODY" \
+            --base main \
+            --draft
+
+          echo "✅ Draft PR created: $TITLE"
