@@ -40,6 +40,40 @@ src/
 - 페이지/레이아웃 이외 컴포넌트는 `app/` 밖에 배치
 - 리스트 `key`는 index 대신 고유 식별자 사용
 
+### App Router 핵심 개념 (Next.js 처음이라면 반드시 읽기)
+
+**Server Component vs Client Component**
+- Server Component: 기본값. `async` 가능, DB/API 직접 호출 가능. `useState`, `useEffect`, 이벤트 핸들러 사용 불가.
+- Client Component: 파일 상단에 `'use client'` 선언. 브라우저 API, 훅, 이벤트 핸들러 사용 가능.
+- 규칙: Server Component가 Client Component를 import할 수 있지만, 반대는 불가.
+
+**app/ 디렉토리 파일 규칙**
+- `page.tsx` — 라우트의 실제 UI. `app/about/page.tsx` → `/about`
+- `layout.tsx` — 하위 페이지를 감싸는 공통 레이아웃. `children` prop 받음.
+- `loading.tsx` — 페이지 로딩 중 보여줄 UI (자동으로 Suspense 처리)
+- `error.tsx` — 에러 발생 시 UI. 반드시 `'use client'`
+- `not-found.tsx` — 404 UI
+
+**데이터 페칭**
+```tsx
+// Server Component에서 직접 fetch (권장)
+export default async function Page() {
+  const data = await fetch('https://...').then(r => r.json())
+  return <div>{data.title}</div>
+}
+```
+
+**라우팅 / 네비게이션**
+- 페이지 이동: `next/link`의 `<Link href="/path">`
+- 프로그래매틱 이동: `'use client'` + `useRouter()` from `next/navigation`
+- 현재 경로: `usePathname()` from `next/navigation`
+- 쿼리스트링: `useSearchParams()` from `next/navigation`
+
+**주의: Pages Router와 다른 점**
+- `getServerSideProps`, `getStaticProps` 없음 → async Server Component로 대체
+- `useRouter` import 경로가 `next/router` 아닌 `next/navigation`
+- `_app.tsx`, `_document.tsx` 없음 → `app/layout.tsx`로 대체
+
 ## 컴포넌트 export
 - named export 사용 (default export는 page/layout만 허용)
 
