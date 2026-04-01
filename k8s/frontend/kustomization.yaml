@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: re-village
+
+resources:
+  - frontend.yaml
+  - ingress.yaml
+
+images:
+  - name: ghcr.io/your-org/re-village-fe
+    newTag: latest
+
+configMapGenerator:
+  - name: frontend-config
+    files:
+      - frontend-config.json=config/frontend-config.json
+
+generatorOptions:
+  disableNameSuffixHash: true
