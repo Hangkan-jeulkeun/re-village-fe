@@ -1,4 +1,15 @@
-.PHONY: commit push pr release
+.PHONY: commit push pr release branch
+
+# Create branch: make branch feat 12
+_BRANCH_ARGS := $(filter-out branch,$(MAKECMDGOALS))
+_BRANCH_TYPE := $(word 1,$(_BRANCH_ARGS))
+_BRANCH_NUM  := $(word 2,$(_BRANCH_ARGS))
+
+branch:
+	@git checkout -b $(_BRANCH_TYPE)/#$(_BRANCH_NUM)
+
+%:
+	@:
 
 # Stage all & auto-commit with Claude-generated message
 commit:

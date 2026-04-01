@@ -97,6 +97,16 @@ export default async function Page() {
 4. 타입 (`import type`)
 5. 스타일 (`.module.css`)
 
+## 브랜치 규칙
+- 형식: `<prefix>/#<이슈번호>-<간단한-설명>`
+- prefix 종류: `feat`, `fix`, `chore`
+- 예시: `feat/#12-login-page`, `fix/#34-header-bug`, `chore/#5-setup-eslint`
+- 설명은 kebab-case, 영문 소문자
+
+## 기능 명세
+- 기능 명세는 `docs/features/` 에 마크다운으로 관리
+- 브랜치 생성 시 관련 명세 파일을 읽고 브랜치 설명을 자동 생성할 것
+
 ## 금지 사항
 - `console.log` 커밋 금지
 - `@ts-ignore` / `eslint-disable` 주석 없이 사용 금지
