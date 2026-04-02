@@ -13,6 +13,7 @@ import {
   useVerifySubmitCode,
 } from '@/features/applications/queries';
 import { useApplyStore } from '@/stores/useApplyStore';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 const TOTAL_STEPS = 5;
 
@@ -49,6 +50,8 @@ export default function StepLayout({ children }: StepLayoutProps) {
     reset,
   } = useApplyStore();
 
+  const { setTokens } = useAuthStore();
+
   const toastManager = Toast.useToastManager();
   const createApplication = useCreateApplicationMultipart();
   const requestSubmitCode = useRequestSubmitCode();
@@ -82,7 +85,8 @@ export default function StepLayout({ children }: StepLayoutProps) {
     verifySubmitCode.mutate(
       { name, phone, code: verificationCode },
       {
-        onSuccess: () => {
+        onSuccess: (tokens) => {
+          setTokens(tokens);
           setMaxReachedStep(2);
           router.push('/apply/step/2');
         },
