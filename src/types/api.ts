@@ -365,7 +365,17 @@ export interface components {
        * @example EMPTY_HOUSE
        * @enum {string}
        */
-      assetType?: 'EMPTY_HOUSE' | 'WAREHOUSE' | 'FIELD' | 'OTHER';
+      assetType?:
+        | 'STONE_WALL_FIELD_HOUSE'
+        | 'STONE_WALL_HOUSE'
+        | 'DEMOLITION_HOUSE'
+        | 'NO_STONE_WALL_HOUSE'
+        | 'D_SHAPED_HOUSE'
+        | 'URBAN_HOUSE_VILLA'
+        | 'EMPTY_HOUSE'
+        | 'WAREHOUSE'
+        | 'FIELD'
+        | 'OTHER';
       /** @example 72 */
       areaSqm?: number;
       /**
@@ -581,29 +591,13 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    /** @description JSON 또는 multipart/form-data 지원. multipart 사용 시 documents 필드에 PDF 파일을 첨부하세요. */
+    /** @description multipart/form-data 권장. documents 필드에 PDF 파일을 첨부하면 Gemini가 문서를 읽어 자동입력 값을 추출합니다. */
     requestBody: {
       content: {
         'application/json': {
-          /**
-           * @example [
-           *       "https://cdn.example.com/docs/registry.pdf"
-           *     ]
-           */
-          documentUrls?: string[];
-          /** @example {"documentUrls":["https://cdn.example.com/docs/registry.pdf"]} */
-          payload?: string;
           documents?: string[];
         };
         'multipart/form-data': {
-          /**
-           * @example [
-           *       "https://cdn.example.com/docs/registry.pdf"
-           *     ]
-           */
-          documentUrls?: string[];
-          /** @example {"documentUrls":["https://cdn.example.com/docs/registry.pdf"]} */
-          payload?: string;
           documents?: string[];
         };
       };

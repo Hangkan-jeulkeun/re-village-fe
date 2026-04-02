@@ -1,4 +1,5 @@
-import { apiClient } from '@/lib/apiClient';
+import { apiClient, apiFetch } from '@/lib/apiClient';
+import type { TokenResponse } from '@/types/auth';
 import type { components, operations } from '@/types/api';
 
 export interface CreateApplicationMultipartRequest {
@@ -23,6 +24,12 @@ export type RequestLookupCodeRequest =
 export type VerifyLookupRequest = components['schemas']['VerifyCodeDto'];
 export type UpdateApplicationStatusRequest =
   components['schemas']['UpdateStatusDto'];
+
+export interface ExtractDocumentsResponse {
+  buildingType?: string;
+  address?: string;
+  areaSqm?: number;
+}
 
 export interface AdminListParams {
   status?:
@@ -51,8 +58,24 @@ export const applicationsApi = {
   requestSubmitCode: (body: RequestLookupCodeRequest) =>
     apiClient.POST('/api/v1/applications/verification/request-code', { body }),
 
-  verifySubmitCode: (body: VerifyLookupRequest) =>
-    apiClient.POST('/api/v1/applications/verification/verify', { body }),
+  verifySubmitCode: async (
+    body: VerifyLookupRequest,
+  ): Promise<TokenResponse> => {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/verification/verify`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      },
+    );
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: res.statusText }));
+      throw error;
+    }
+    const json = (await res.json()) as { data: TokenResponse };
+    return json.data;
+  },
 
   verifyAndLookup: (body: VerifyLookupRequest) =>
     apiClient.POST('/api/v1/applications/lookup/verify', { body }),
@@ -88,6 +111,36 @@ export const applicationsApi = {
       body,
     }),
 
+  extractDocuments: async (
+    documents: File[],
+  ): Promise<ExtractDocumentsResponse> => {
+    const formData = new FormData();
+    documents.forEach((file) => formData.append('documents', file));
+
+    const res = await apiFetch('/api/v1/applications/documents/extract', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: res.statusText }));
+      throw error;
+    }
+
+    const json = (await res.json()) as {
+      data: {
+        extracted: {
+          address?: string;
+          detectedAreaSqm?: number;
+        };
+      };
+    };
+    return {
+      address: json.data.extracted.address,
+      areaSqm: json.data.extracted.detectedAreaSqm,
+    };
+  },
+
   createMultipart: async (data: CreateApplicationMultipartRequest) => {
     const { photos, ...fields } = data;
     const formData = new FormData();
@@ -105,10 +158,10 @@ export const applicationsApi = {
 
     photos?.forEach((file) => formData.append('photos', file));
 
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications`,
-      { method: 'POST', body: formData },
-    );
+    const res = await apiFetch('/api/v1/applications', {
+      method: 'POST',
+      body: formData,
+    });
 
     if (!res.ok) {
       const error = await res.json().catch(() => ({ message: res.statusText }));

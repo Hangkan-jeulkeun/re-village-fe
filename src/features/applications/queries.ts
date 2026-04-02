@@ -2,9 +2,6 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { useAuthStore } from '@/stores/useAuthStore';
-import type { TokenResponse } from '@/types/auth';
-
 import { applicationsApi } from './api';
 import type {
   AdminListParams,
@@ -73,14 +70,8 @@ export function useRequestSubmitCode() {
 
 export function useVerifySubmitCode() {
   return useMutation({
-    mutationFn: async (body: VerifyLookupRequest) => {
-      const { data, error } = await applicationsApi.verifySubmitCode(body);
-      if (error) throw error;
-      return data as TokenResponse;
-    },
-    onSuccess: (data) => {
-      useAuthStore.getState().setTokens(data);
-    },
+    mutationFn: (body: VerifyLookupRequest) =>
+      applicationsApi.verifySubmitCode(body),
   });
 }
 
@@ -91,6 +82,13 @@ export function useVerifyAndLookup() {
       if (error) throw error;
       return data;
     },
+  });
+}
+
+export function useExtractDocuments() {
+  return useMutation({
+    mutationFn: (documents: File[]) =>
+      applicationsApi.extractDocuments(documents),
   });
 }
 

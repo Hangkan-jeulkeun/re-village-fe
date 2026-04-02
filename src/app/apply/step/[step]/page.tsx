@@ -15,6 +15,7 @@ import {
 import Button from '@/components/common/base/Button';
 import Input from '@/components/common/inputs/Input';
 import Select from '@/components/common/inputs/Select';
+import { useExtractDocuments } from '@/features/applications/queries';
 import { useApplyStore } from '@/stores/useApplyStore';
 import { formatPhoneNumber } from '@/utils/formatPhoneNumber';
 
@@ -84,11 +85,14 @@ export default function ApplyStepPage() {
     setPhotos,
   } = useApplyStore();
   const toastManager = Toast.useToastManager();
+  const { mutate: extractDocuments, isPending: isExtracting } =
+    useExtractDocuments();
   const previewUrls = useMemo(
     () => photos.map((file) => URL.createObjectURL(file)),
     [photos],
   );
-  const [attachedDocuments, setAttachedDocuments] = useState<string[]>([]);
+  const [attachedDocuments, setAttachedDocuments] = useState<File[]>([]);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -146,10 +150,22 @@ export default function ApplyStepPage() {
 
   const handleDocumentUpload = (files: FileList | null) => {
     if (!files) return;
-    setAttachedDocuments((prev) => [
-      ...prev,
-      ...Array.from(files).map((f) => f.name),
-    ]);
+    const newFiles = Array.from(files);
+    setAttachedDocuments((prev) => [...prev, ...newFiles]);
+    extractDocuments(newFiles, {
+      onSuccess: (data) => {
+        if (data.buildingType) setBuildingType(data.buildingType);
+        if (data.address) setAddress(data.address);
+        if (data.areaSqm !== undefined) setArea(String(data.areaSqm));
+      },
+      onError: () => {
+        toastManager.add({
+          title: '서류 분석에 실패했어요',
+          colorPalette: 'danger',
+          close: true,
+        });
+      },
+    });
   };
 
   return (
@@ -381,12 +397,49 @@ export default function ApplyStepPage() {
             onChange={(e) => handleDocumentUpload(e.target.files)}
           />
 
-          <Button
-            tone="secondary"
-            onClick={() => window.open('https://www.gov.kr', '_blank')}
+          <div
+            role="button"
+            tabIndex={0}
+            aria-label="민간인증으로 서류 불러오기"
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragOver(true);
+            }}
+            onDragLeave={() => setIsDragOver(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setIsDragOver(false);
+              handleDocumentUpload(e.dataTransfer.files);
+            }}
+            onClick={() => documentInputRef.current?.click()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ')
+                documentInputRef.current?.click();
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '64px',
+              border: `2px solid ${isDragOver ? 'var(--color-brand-interactive)' : 'var(--color-border-primary)'}`,
+              borderRadius: '16px',
+              background: isDragOver
+                ? 'var(--color-bg-canvas-sub)'
+                : 'var(--color-bg-canvas)',
+              cursor: 'pointer',
+              transition: 'background 0.15s ease, border-color 0.15s ease',
+            }}
           >
-            민간인증으로 서류 발급받기
-          </Button>
+            <span
+              style={{
+                fontSize: 'var(--size-senior-font)',
+                fontWeight: 700,
+                color: 'var(--color-brand-interactive)',
+              }}
+            >
+              민간인증으로 서류 불러오기
+            </span>
+          </div>
 
           {attachedDocuments.length > 0 ? (
             <ul
@@ -399,7 +452,7 @@ export default function ApplyStepPage() {
               }}
             >
               {attachedDocuments.map((doc) => (
-                <li key={doc}>{doc}</li>
+                <li key={doc.name}>{doc.name}</li>
               ))}
             </ul>
           ) : null}
@@ -408,7 +461,9 @@ export default function ApplyStepPage() {
             label="건물 종류"
             value={buildingType}
             onValueChange={setBuildingType}
-            placeholder="건물 종류를 선택해주세요"
+            placeholder={
+              isExtracting ? '분석 중...' : '건물 종류를 선택해주세요'
+            }
             disabled
             options={[
               { value: '단독 주택', label: '단독 주택' },
@@ -420,7 +475,9 @@ export default function ApplyStepPage() {
           <Input
             id="address"
             label="주소"
-            placeholder="예: 제주특별자치도 서귀포시..."
+            placeholder={
+              isExtracting ? '분석 중...' : '예: 제주특별자치도 서귀포시...'
+            }
             value={address}
             readOnly
             onChange={(e) => setAddress(e.target.value)}
@@ -430,7 +487,7 @@ export default function ApplyStepPage() {
             id="area"
             label="면적 (m²)"
             inputMode="decimal"
-            placeholder="예: 84.5"
+            placeholder={isExtracting ? '분석 중...' : '예: 84.5'}
             value={area}
             readOnly
             onChange={(e) => setArea(e.target.value)}

@@ -18,8 +18,14 @@
   -ms-overflow-style: none;
 }
 
-.appContent::-webkit-scrollbar {
+.appContent::-webkit-scrollbar,
+.appContent *::-webkit-scrollbar {
   display: none;
+}
+
+.appContent * {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .pcShell {

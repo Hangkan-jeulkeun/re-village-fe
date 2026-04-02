@@ -13,7 +13,7 @@ export function useLogin() {
     mutationFn: async (body: LoginRequest) => {
       const { data, error } = await authApi.login(body);
       if (error) throw error;
-      return data as TokenResponse;
+      return data as unknown as TokenResponse;
     },
     onSuccess: (data) => {
       useAuthStore.getState().setTokens(data);
