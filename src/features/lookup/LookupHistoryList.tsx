@@ -3,18 +3,19 @@
 import { useEffect } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Box, Button, HStack, Text, VStack } from '@vapor-ui/core';
 
-import { useMyApplications } from './queries';
+import { PageLoader } from '@/components/common/PageLoader';
 
-type AssetType =
-  | 'STONE_WALL_FIELD_HOUSE'
-  | 'STONE_WALL_HOUSE'
-  | 'DEMOLITION_HOUSE'
-  | 'NO_STONE_WALL_HOUSE'
-  | 'D_SHAPED_HOUSE'
-  | 'URBAN_HOUSE_VILLA';
+import { useMyApplications } from './queries';
+import {
+  DEFAULT_ASSET_IMAGE,
+  LOOKUP_ASSET_IMAGE,
+  LOOKUP_ASSET_LABEL,
+  type LookupAssetType,
+} from './thumbnailAssets';
 
 type AppStatus =
   | 'RECEIVED'
@@ -26,31 +27,15 @@ type AppStatus =
 
 interface MyApplication {
   id: string;
-  assetType: AssetType;
+  assetType: LookupAssetType;
   status: AppStatus;
   areaSqm?: number;
   lease?: string;
   address?: string;
   createdAt?: string;
+  thumbnailUrl?: string | null;
+  canCancel?: boolean;
 }
-
-const ASSET_IMAGE: Record<AssetType, string> = {
-  STONE_WALL_FIELD_HOUSE: '/images/home-type1-damBat.png',
-  STONE_WALL_HOUSE: '/images/home-type2-dam.png',
-  DEMOLITION_HOUSE: '/images/home-type3-parking.png',
-  D_SHAPED_HOUSE: '/images/home-type4-tree.png',
-  NO_STONE_WALL_HOUSE: '/images/home-type5-nodam.png',
-  URBAN_HOUSE_VILLA: '/images/home-type6-nomalcity.png',
-};
-
-const ASSET_LABEL: Record<AssetType, string> = {
-  STONE_WALL_FIELD_HOUSE: '돌담+밭 주택',
-  STONE_WALL_HOUSE: '돌담 주택',
-  DEMOLITION_HOUSE: '창고포함주택',
-  D_SHAPED_HOUSE: '철거주택',
-  NO_STONE_WALL_HOUSE: '돌담없는 주택',
-  URBAN_HOUSE_VILLA: '도심주택/빌라',
-};
 
 const STATUS_STEP: Record<AppStatus, number> = {
   RECEIVED: 0,
@@ -72,13 +57,100 @@ function formatDotDate(value?: string): string {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
+function formatLookupAddress(value?: string): string {
+  if (!value) return '주소 없음';
+
+  return value
+    .replace(/^제주특별자치도\s*/u, '')
+    .replace(/^제주도\s*/u, '')
+    .trim();
+}
+
+function isLookupAssetType(value: unknown): value is LookupAssetType {
+  return typeof value === 'string' && value in LOOKUP_ASSET_IMAGE;
+}
+
+function isAppStatus(value: unknown): value is AppStatus {
+  return (
+    value === 'RECEIVED' ||
+    value === 'REVIEWING' ||
+    value === 'REMODELING' ||
+    value === 'LEASING' ||
+    value === 'COMPLETED' ||
+    value === 'REJECTED'
+  );
+}
+
+function parseApplicationItem(raw: unknown): MyApplication | null {
+  if (!raw || typeof raw !== 'object') return null;
+
+  const item = raw as {
+    id?: unknown;
+    status?: unknown;
+    lease?: unknown;
+    appliedAt?: unknown;
+    completedAt?: unknown;
+    canCancel?: unknown;
+    asset?: {
+      address?: unknown;
+      areaSqm?: unknown;
+      assetType?: unknown;
+    } | null;
+    images?: Array<{
+      fileUrl?: unknown;
+      sortOrder?: unknown;
+    }> | null;
+  };
+
+  if (typeof item.id !== 'string' || !isAppStatus(item.status)) return null;
+
+  const sortedImages = Array.isArray(item.images)
+    ? [...item.images].sort((a, b) => {
+        const aOrder = typeof a?.sortOrder === 'number' ? a.sortOrder : 9999;
+        const bOrder = typeof b?.sortOrder === 'number' ? b.sortOrder : 9999;
+        return aOrder - bOrder;
+      })
+    : [];
+
+  const firstImageWithUrl = sortedImages.find(
+    (image): image is { fileUrl: string; sortOrder?: unknown } =>
+      typeof image?.fileUrl === 'string',
+  );
+  const thumbnailUrl = firstImageWithUrl?.fileUrl ?? null;
+
+  return {
+    id: item.id,
+    status: item.status,
+    lease: typeof item.lease === 'string' ? item.lease : undefined,
+    createdAt:
+      typeof item.appliedAt === 'string'
+        ? item.appliedAt
+        : typeof item.completedAt === 'string'
+          ? item.completedAt
+          : undefined,
+    canCancel: item.canCancel === true,
+    address:
+      typeof item.asset?.address === 'string' ? item.asset.address : undefined,
+    areaSqm:
+      typeof item.asset?.areaSqm === 'number' ? item.asset.areaSqm : undefined,
+    assetType: isLookupAssetType(item.asset?.assetType)
+      ? item.asset.assetType
+      : 'STONE_WALL_FIELD_HOUSE',
+    thumbnailUrl,
+  };
+}
+
 function parseApplications(raw: unknown): MyApplication[] {
-  if (!raw || typeof raw !== 'object') return [];
-  if ('data' in raw && Array.isArray((raw as { data: unknown }).data)) {
-    return (raw as { data: MyApplication[] }).data;
-  }
-  if (Array.isArray(raw)) return raw as MyApplication[];
-  return [];
+  const items =
+    raw && typeof raw === 'object' && 'data' in raw
+      ? (raw as { data?: unknown }).data
+      : raw;
+
+  if (!Array.isArray(items)) return [];
+
+  return items
+    .map((item) => parseApplicationItem(item))
+    .filter((item): item is MyApplication => item !== null);
 }
 
 export function LookupHistoryList() {
@@ -98,18 +170,21 @@ export function LookupHistoryList() {
   );
 
   if (isPending) {
-    return (
-      <Box style={{ padding: 'var(--gap-lg)', textAlign: 'center' }}>
-        <Text typography="body2" style={{ color: 'var(--color-fg-subtle)' }}>
-          불러오는 중...
-        </Text>
-      </Box>
-    );
+    return <PageLoader />;
   }
 
   if (items.length === 0) {
     return (
-      <Box style={{ padding: 'var(--gap-lg)', textAlign: 'center' }}>
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flex: 1,
+          padding: 'var(--gap-2xl)',
+          animation: 'fadeIn var(--duration-normal) var(--ease-out)',
+        }}
+      >
         <Text typography="body2" style={{ color: 'var(--color-fg-subtle)' }}>
           신청 내역이 없습니다.
         </Text>
@@ -128,11 +203,11 @@ export function LookupHistoryList() {
           'var(--size-space-250) var(--size-space-250) var(--size-space-400)',
       }}
     >
-      {items.map((item) =>
+      {items.map((item, index) =>
         DONE_STATUSES.has(item.status) ? (
-          <CompletedCard key={item.id} item={item} />
+          <CompletedCard key={item.id} item={item} index={index} />
         ) : (
-          <InProgressCard key={item.id} item={item} />
+          <InProgressCard key={item.id} item={item} index={index} />
         ),
       )}
     </VStack>
@@ -148,14 +223,28 @@ const cardStyle: CSSProperties = {
   boxShadow: '0 10px 28px rgb(15 23 42 / 0.06)',
 };
 
-function InProgressCard({ item }: { item: MyApplication }) {
+function InProgressCard({
+  item,
+  index,
+}: {
+  item: MyApplication;
+  index: number;
+}) {
   const imageSrc =
-    ASSET_IMAGE[item.assetType] ?? '/images/home-type1-damBat.png';
-  const label = ASSET_LABEL[item.assetType] ?? item.assetType;
+    item.thumbnailUrl ??
+    LOOKUP_ASSET_IMAGE[item.assetType] ??
+    DEFAULT_ASSET_IMAGE;
+  const label = LOOKUP_ASSET_LABEL[item.assetType] ?? item.assetType;
   const step = STATUS_STEP[item.status] ?? 0;
 
   return (
-    <VStack style={cardStyle}>
+    <VStack
+      style={{
+        ...cardStyle,
+        animation: 'slideUpFade var(--duration-slow) var(--ease-out) both',
+        animationDelay: `${index * 55}ms`,
+      }}
+    >
       <HStack
         style={{
           display: 'grid',
@@ -175,7 +264,7 @@ function InProgressCard({ item }: { item: MyApplication }) {
           }}
         >
           <Text typography="heading3" style={{ wordBreak: 'keep-all' }}>
-            {item.address ?? '주소 없음'}
+            {formatLookupAddress(item.address)}
           </Text>
           <VStack style={{ display: 'grid', gap: 'var(--size-space-050)' }}>
             <Text
@@ -188,14 +277,14 @@ function InProgressCard({ item }: { item: MyApplication }) {
             >
               {label}
             </Text>
-            {item.areaSqm != null ? (
+            {/* {item.areaSqm != null ? (
               <Text
                 typography="body2"
                 style={{ color: 'var(--color-fg-placeholder)' }}
               >
                 {item.areaSqm}㎡
               </Text>
-            ) : null}
+            ) : null} */}
           </VStack>
         </VStack>
       </HStack>
@@ -205,7 +294,6 @@ function InProgressCard({ item }: { item: MyApplication }) {
           typography="body2"
           style={{
             color: 'var(--color-fg-subtle)',
-            lineHeight: 1.6,
             wordBreak: 'keep-all',
           }}
         >
@@ -222,8 +310,10 @@ function InProgressCard({ item }: { item: MyApplication }) {
           gap: 'var(--size-space-150)',
         }}
       >
-        <ActionButton tone="outline">신청서 확인</ActionButton>
-        {item.status === 'RECEIVED' ? (
+        <ActionButton tone="outline" href="/lookup/detail">
+          신청 상세
+        </ActionButton>
+        {item.canCancel ? (
           <ActionButton tone="danger">신청 취소</ActionButton>
         ) : null}
       </Box>
@@ -231,10 +321,18 @@ function InProgressCard({ item }: { item: MyApplication }) {
   );
 }
 
-function CompletedCard({ item }: { item: MyApplication }) {
+function CompletedCard({
+  item,
+  index,
+}: {
+  item: MyApplication;
+  index: number;
+}) {
   const imageSrc =
-    ASSET_IMAGE[item.assetType] ?? '/images/home-type1-damBat.png';
-  const label = ASSET_LABEL[item.assetType] ?? item.assetType;
+    item.thumbnailUrl ??
+    LOOKUP_ASSET_IMAGE[item.assetType] ??
+    DEFAULT_ASSET_IMAGE;
+  const label = LOOKUP_ASSET_LABEL[item.assetType] ?? item.assetType;
   const appliedDate = formatDotDate(item.createdAt);
 
   const badgeStyle: CSSProperties =
@@ -245,7 +343,14 @@ function CompletedCard({ item }: { item: MyApplication }) {
   const badgeLabel = item.status === 'REJECTED' ? '반려' : '완료';
 
   return (
-    <VStack style={{ ...cardStyle, gap: 'var(--size-space-225)' }}>
+    <VStack
+      style={{
+        ...cardStyle,
+        gap: 'var(--size-space-225)',
+        animation: 'slideUpFade var(--duration-slow) var(--ease-out) both',
+        animationDelay: `${index * 55}ms`,
+      }}
+    >
       <HStack
         style={{
           display: 'grid',
@@ -268,7 +373,7 @@ function CompletedCard({ item }: { item: MyApplication }) {
             typography="heading3"
             style={{ color: 'var(--color-fg-normal)', wordBreak: 'keep-all' }}
           >
-            {item.address ?? '주소 없음'}
+            {formatLookupAddress(item.address)}
           </Text>
           <Text
             typography="body1"
@@ -301,14 +406,22 @@ function CompletedCard({ item }: { item: MyApplication }) {
         </Box>
       </HStack>
 
-      <ActionButton tone="outline">신청서 확인</ActionButton>
+      <ActionButton tone="outline" href="/lookup/detail?tab=analysis">
+        활용 안내
+      </ActionButton>
     </VStack>
   );
 }
 
 function StepLine({ activeIndex }: { activeIndex: number }) {
   return (
-    <VStack style={{ display: 'grid', gap: 'var(--size-space-150)' }}>
+    <VStack
+      style={{
+        display: 'grid',
+        gap: 'var(--size-space-150)',
+        padding: 'var(--size-space-100) 0',
+      }}
+    >
       <Box
         style={{
           display: 'grid',
@@ -416,9 +529,11 @@ function StepLine({ activeIndex }: { activeIndex: number }) {
 
 function ActionButton({
   children,
+  href,
   tone,
 }: {
   children: ReactNode;
+  href?: string;
   tone: 'outline' | 'danger';
 }) {
   const style: Record<'outline' | 'danger', CSSProperties> = {
@@ -433,7 +548,7 @@ function ActionButton({
     },
   };
 
-  return (
+  const button = (
     <Button
       size="lg"
       style={{
@@ -455,6 +570,16 @@ function ActionButton({
       </Text>
     </Button>
   );
+
+  if (href) {
+    return (
+      <Link href={href} style={{ display: 'block', width: '100%' }}>
+        {button}
+      </Link>
+    );
+  }
+
+  return button;
 }
 
 function HouseThumbnail({ imageSrc }: { imageSrc: string }) {
@@ -475,6 +600,8 @@ function HouseThumbnail({ imageSrc }: { imageSrc: string }) {
         src={imageSrc}
         alt=""
         fill
+        unoptimized
+        loading="eager"
         sizes="calc(var(--size-800) + var(--size-300))"
         style={{ objectFit: 'cover' }}
       />

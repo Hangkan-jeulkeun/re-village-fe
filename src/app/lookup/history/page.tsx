@@ -3,13 +3,18 @@ import { Box, Text } from '@vapor-ui/core';
 import AppLayout from '@/components/layout/AppLayout';
 import { LookupHistoryList } from '@/features/lookup/LookupHistoryList';
 import { LookupHistoryLogger } from '@/features/lookup/LookupHistoryLogger';
+import {
+  LookupPageShell,
+  LookupTopBar,
+  type LookupTabItem,
+} from './LookupTopBar';
 
 type TabKey = 'in-progress' | 'done';
 
-const TAB_LABELS: Record<TabKey, string> = {
-  'in-progress': '진행 중',
-  done: '완료',
-};
+const TABS: LookupTabItem[] = [
+  { key: 'in-progress', label: '진행 중', href: '/lookup/history' },
+  { key: 'done', label: '완료', href: '/lookup/history?tab=done' },
+];
 
 export default async function LookupHistoryPage({
   searchParams,
@@ -28,78 +33,14 @@ export default async function LookupHistoryPage({
         background: 'var(--color-bg-canvas-sub)',
       }}
     >
-      <Box
-        style={{
-          minHeight: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          background: 'var(--color-bg-canvas-sub)',
-        }}
-      >
+      <LookupPageShell>
         <LookupHistoryLogger />
 
-        <Box
-          style={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 2,
-            background:
-              'color-mix(in srgb, var(--color-bg-overlay) 96%, transparent)',
-            backdropFilter: 'blur(var(--size-200))',
-          }}
-        >
-          <Box
-            style={{
-              padding: 'var(--size-space-200)',
-              textAlign: 'center',
-              borderBottom: '1px solid var(--color-bg-primary-100)',
-            }}
-          >
-            <Text
-              typography="heading5"
-              style={{ color: 'var(--color-fg-normal)' }}
-            >
-              신청 내역 확인하기
-            </Text>
-          </Box>
-
-          <Box style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-            {(Object.keys(TAB_LABELS) as TabKey[]).map((tab) => {
-              const isActive = tab === activeTab;
-              const href =
-                tab === 'done' ? '/lookup/history?tab=done' : '/lookup/history';
-
-              return (
-                <Link
-                  key={tab}
-                  href={href}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: 'var(--size-space-150) var(--size-space-150)',
-                    border: 0,
-                    borderBottom: isActive
-                      ? '2px solid var(--color-border-primary)'
-                      : '2px solid transparent',
-                    background: 'transparent',
-                  }}
-                >
-                  <Text
-                    typography="heading5"
-                    style={{
-                      color: isActive
-                        ? 'var(--color-fg-primary)'
-                        : 'var(--color-fg-placeholder)',
-                    }}
-                  >
-                    {TAB_LABELS[tab]}
-                  </Text>
-                </Link>
-              );
-            })}
-          </Box>
-        </Box>
+        <LookupTopBar
+          title="신청 내역 확인하기"
+          tabs={TABS}
+          activeTab={activeTab}
+        />
 
         <LookupHistoryList />
 
@@ -125,8 +66,8 @@ export default async function LookupHistoryPage({
               alignItems: 'center',
               justifyContent: 'center',
               width: '100%',
-              height: 'calc(var(--size-600) + var(--size-300))',
-              borderRadius: 'var(--size-space-250)',
+              height: 'calc(var(--size-500) + var(--size-300))',
+              borderRadius: 'var(--size-space-200)',
               background: 'var(--color-brand-interactive)',
             }}
           >
@@ -138,7 +79,7 @@ export default async function LookupHistoryPage({
             </Text>
           </Link>
         </Box>
-      </Box>
+      </LookupPageShell>
     </AppLayout>
   );
 }

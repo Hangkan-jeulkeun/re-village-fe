@@ -16,7 +16,7 @@ export function LookupHistoryLogger() {
   const redirectUrl = (() => {
     const queryString = searchParams.toString();
     const currentPath = queryString ? `${pathname}?${queryString}` : pathname;
-    return `/lookup/login?redirect=${encodeURIComponent(currentPath)}`;
+    return `/lookup/phone-verification?redirect=${encodeURIComponent(currentPath)}`;
   })();
 
   useEffect(() => {
@@ -29,8 +29,9 @@ export function LookupHistoryLogger() {
 
     if (statusCode === 401) {
       clearTokens();
-      router.replace(redirectUrl);
     }
+
+    router.replace(redirectUrl);
   }, [clearTokens, error, redirectUrl, router]);
 
   return null;

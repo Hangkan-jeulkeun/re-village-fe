@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
 import { QueryProvider } from '@/components/QueryProvider';
+import { LOOKUP_THUMBNAIL_PRELOADS } from '@/features/lookup/thumbnailAssets';
 import './globals.css';
 
 const geistSans = Geist({
@@ -26,6 +27,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <head>
+        {LOOKUP_THUMBNAIL_PRELOADS.map((href) => (
+          <link key={href} rel="preload" as="image" href={href} />
+        ))}
+      </head>
       <body>
         <QueryProvider>{children}</QueryProvider>
       </body>

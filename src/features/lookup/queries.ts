@@ -12,7 +12,8 @@ export const lookupKeys = {
 export function useMyApplications() {
   return useQuery({
     queryKey: lookupKeys.myApplications(),
-    enabled: false,
+    staleTime: 1000 * 60 * 5,
+    retry: false,
     queryFn: async () => {
       const { data, error } = await lookupApi.getMyApplications();
       if (error) throw error;
