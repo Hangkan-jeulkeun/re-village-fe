@@ -11,7 +11,7 @@ export function LookupHistoryLogger() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const clearTokens = useAuthStore((state) => state.clearTokens);
-  const { data, error, refetch } = useMyApplications();
+  const { error } = useMyApplications();
 
   const redirectUrl = (() => {
     const queryString = searchParams.toString();
@@ -20,19 +20,7 @@ export function LookupHistoryLogger() {
   })();
 
   useEffect(() => {
-    void refetch();
-  }, [refetch]);
-
-  useEffect(() => {
-    if (data) {
-      console.log('[lookup/history] my applications', data);
-    }
-  }, [data]);
-
-  useEffect(() => {
     if (!error) return;
-
-    console.error('[lookup/history] my applications error', error);
 
     const statusCode =
       typeof error === 'object' && error !== null && 'error' in error
