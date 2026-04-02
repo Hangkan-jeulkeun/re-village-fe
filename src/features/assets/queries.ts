@@ -1,9 +1,9 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import { assetsApi } from './api';
-import type { AssetsListingsQuery, CreateInquiryRequest } from './api';
+import type { AssetsListingsQuery } from './api';
 
 export const assetKeys = {
   all: ['assets'] as const,
@@ -30,23 +30,6 @@ export function useAssetListing(id: string) {
       const { data, error } = await assetsApi.findListing(id);
       if (error) throw error;
       return data;
-    },
-  });
-}
-
-export function useCreateInquiry() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({
-      id,
-      ...body
-    }: CreateInquiryRequest & { id: string }) => {
-      const { data, error } = await assetsApi.createInquiry(id, body);
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: assetKeys.listing(id) });
     },
   });
 }

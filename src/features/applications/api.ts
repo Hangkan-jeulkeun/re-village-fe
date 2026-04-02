@@ -1,8 +1,8 @@
 import { apiClient } from '@/lib/apiClient';
-import type { components } from '@/types/api';
+import type { components, operations } from '@/types/api';
 
 export type CreateApplicationRequest =
-  components['schemas']['QuickApplicationDto'];
+  operations['ApplicationsController_create']['requestBody']['content']['application/json'];
 export type RequestLookupCodeRequest =
   components['schemas']['RequestVerificationDto'];
 export type VerifyLookupRequest = components['schemas']['VerifyCodeDto'];
@@ -29,10 +29,16 @@ export interface AdminListParams {
 
 export const applicationsApi = {
   create: (body: CreateApplicationRequest) =>
-    apiClient.POST('/api/v1/applications', { body }),
+    apiClient.POST('/api/v1/applications', {
+      params: { header: { 'content-type': 'application/json' } },
+      body,
+    }),
 
   requestLookupCode: (body: RequestLookupCodeRequest) =>
     apiClient.POST('/api/v1/applications/lookup/request-code', { body }),
+
+  requestSubmitCode: (body: RequestLookupCodeRequest) =>
+    apiClient.POST('/api/v1/applications/verification/request-code', { body }),
 
   verifyAndLookup: (body: VerifyLookupRequest) =>
     apiClient.POST('/api/v1/applications/lookup/verify', { body }),

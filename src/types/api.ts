@@ -4,23 +4,6 @@
  */
 
 export interface paths {
-  '/api/v1/auth/signup': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** 회원가입 */
-    post: operations['AuthController_signup'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   '/api/v1/auth/login': {
     parameters: {
       query?: never;
@@ -55,6 +38,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/applications/autofill': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** GPS/사진 기반 빈집 정보 자동입력 추천 */
+    post: operations['ApplicationsController_autofill'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/applications': {
     parameters: {
       query?: never;
@@ -72,6 +72,40 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/applications/me': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 내 신청 목록 조회 (액세스 토큰 기반) */
+    get: operations['ApplicationsController_myApplications'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/applications/{id}/analysis': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 내 신청 건 AI 매물 분석 (액세스 토큰 기반) */
+    get: operations['ApplicationsController_analyzeMyApplication'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/applications/lookup/request-code': {
     parameters: {
       query?: never;
@@ -81,8 +115,25 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** 신청내역 조회용 인증번호 요청 */
+    /** 인증번호 요청 (조회/신청 공용) */
     post: operations['ApplicationsController_requestLookupCode'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/applications/verification/request-code': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** 신청용 인증번호 요청 (SMS 발송) */
+    post: operations['ApplicationsController_requestSubmitCode'];
     delete?: never;
     options?: never;
     head?: never;
@@ -259,150 +310,57 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/api/v1/assets/{id}/inquiries': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** 개인 매물 임대 문의 접수 */
-    post: operations['AssetsController_createInquiry'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/files/upload': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** 신청용 파일 업로드 (회원가입 없이 사용 가능) */
-    post: operations['FilesController_upload'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
-    SignupDto: {
-      /** @example youth@example.com */
-      email: string;
-      /**
-       * @description 8~64자 영문/숫자/특수문자 조합
-       * @example StrongPass123!
-       */
-      password: string;
-      /** @example 홍길동 */
-      name: string;
-      /** @example 010-1234-5678 */
-      phone?: string;
-      /**
-       * @example YOUTH
-       * @enum {string}
-       */
-      role?: 'ELDER' | 'YOUTH' | 'ADMIN';
-    };
     LoginDto: {
       /** @example youth@example.com */
       email: string;
       /** @example StrongPass123! */
       password: string;
     };
-    ApplicationDocumentInputDto: {
-      /** @example https://cdn.example.com/docs/registry.pdf */
-      fileUrl: string;
-      /**
-       * @example PROPERTY_REGISTER
-       * @enum {string}
-       */
-      type?:
-        | 'PROPERTY_REGISTER'
-        | 'BUILDING_REGISTER'
-        | 'LAND_REGISTER'
-        | 'FAMILY_RELATION_CERTIFICATE'
-        | 'OTHER';
-    };
-    QuickApplicationDto: {
-      /**
-       * @description 신규 필드 (권장)
-       * @example 홍길동
-       */
-      name?: string;
-      /**
-       * @description 하위 호환 필드
-       * @example 홍길동
-       */
-      applicantName?: string;
-      /**
-       * @description 하이픈 포함 입력 허용
-       * @example 010-1234-5678
-       */
-      phone: string;
-      /** @example owner@example.com */
-      email?: string;
+    AutofillHouseDto: {
+      /** @example 제주특별자치도 제주시 한림읍 ... */
+      address?: string;
+      /** @example 33.4996 */
+      latitude?: number;
+      /** @example 126.5312 */
+      longitude?: number;
       /**
        * @example EMPTY_HOUSE
        * @enum {string}
        */
       assetType?: 'EMPTY_HOUSE' | 'WAREHOUSE' | 'FIELD' | 'OTHER';
-      /**
-       * @example EMPTY_HOUSE
-       * @enum {string}
-       */
-      detectedAssetType?: 'EMPTY_HOUSE' | 'WAREHOUSE' | 'FIELD' | 'OTHER';
-      /** @example 제주특별자치도 제주시 한림읍 ... */
-      address?: string;
-      /** @example 제주특별자치도 제주시 한림읍 ... */
-      detectedAddress?: string;
       /** @example 72 */
       areaSqm?: number;
-      /** @example 72 */
-      detectedAreaSqm?: number;
-      /** @example 33.4996 */
-      latitude?: number;
-      /** @example 126.5312 */
-      longitude?: number;
+      /**
+       * @description 층수(단층=1)
+       * @example 1
+       */
+      floorCount?: number;
+      /**
+       * @description 마당 유무
+       * @example true
+       */
+      hasYard?: boolean;
+      /**
+       * @description 주차 가능 여부
+       * @example true
+       */
+      hasParking?: boolean;
       /**
        * @example [
        *       "https://cdn.example.com/building-1.jpg"
        *     ]
        */
       photoUrls?: string[];
-      /**
-       * @description 레거시 문서 URL 리스트
-       * @example [
-       *       "https://cdn.example.com/registry.pdf"
-       *     ]
-       */
-      documentUrls?: string[];
-      /** @description 문서 유형 포함 문서 리스트 */
-      documentFiles?: components['schemas']['ApplicationDocumentInputDto'][];
-      /** @example 건물 관련 추가 설명 */
-      notes?: string;
-      /**
-       * Format: uuid
-       * @deprecated
-       * @description 더 이상 사용하지 않습니다. 신청 시 빈집 자산은 항상 신규 생성됩니다.
-       */
-      assetId?: string;
-      /**
-       * Format: date
-       * @example 2026-05-01
-       */
-      desiredStartDate?: string;
+    };
+    VerificationCodeResponseDto: {
+      /** @example 123456 */
+      code: string;
+      /** @example 180 */
+      expiresInSeconds: number;
     };
     RequestVerificationDto: {
       /** @example 010-1234-5678 */
@@ -453,22 +411,6 @@ export interface components {
       /** @example 제주시 건축과 064-000-0000 */
       managerContact?: string;
     };
-    CreateInquiryDto: {
-      /** @example 홍길동 */
-      name: string;
-      /** @example 010-1234-5678 */
-      phone: string;
-      /** @example owner@example.com */
-      email?: string;
-      /** @example 게스트하우스 운영 */
-      purpose: string;
-      /** @example 가족 */
-      householdType?: string;
-      /** @example 2 */
-      headCount?: number;
-      /** @example 현장 확인 가능한 날짜를 안내 부탁드립니다. */
-      message?: string;
-    };
   };
   responses: never;
   parameters: never;
@@ -478,28 +420,6 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  AuthController_signup: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['SignupDto'];
-      };
-    };
-    responses: {
-      /** @description 회원가입 성공 (JWT 토큰 반환) */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
   AuthController_login: {
     parameters: {
       query?: never;
@@ -540,7 +460,7 @@ export interface operations {
       };
     };
   };
-  ApplicationsController_create: {
+  ApplicationsController_autofill: {
     parameters: {
       query?: never;
       header?: never;
@@ -549,11 +469,132 @@ export interface operations {
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['QuickApplicationDto'];
+        'application/json': components['schemas']['AutofillHouseDto'];
       };
     };
     responses: {
       201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  ApplicationsController_create: {
+    parameters: {
+      query?: never;
+      header: {
+        'content-type': string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    /** @description JSON 또는 multipart/form-data 지원. multipart 사용 시 일반 필드는 그대로 넣고, 사진은 photos, 서류는 documents 필드에 파일 첨부하세요. */
+    requestBody: {
+      content: {
+        'application/json': {
+          /** @example 홍길동 */
+          name?: string;
+          /** @example 010-1234-5678 */
+          phone?: string;
+          /** @example 123456 */
+          verificationCode?: string;
+          /** @example owner@example.com */
+          email?: string;
+          /** @example 제주특별자치도 서귀포시 천지동 */
+          address?: string;
+          /** @example EMPTY_HOUSE */
+          assetType?: string;
+          /** @example 72 */
+          areaSqm?: number;
+          /** @example 1 */
+          floorCount?: number;
+          /** @example true */
+          hasYard?: boolean;
+          /** @example true */
+          hasParking?: boolean;
+          /** @example 건물 관련 추가 설명 */
+          notes?: string;
+          /**
+           * @description 선택. multipart에서 JSON 문자열로 전달 가능. payload와 개별 필드가 겹치면 개별 필드 우선
+           * @example {"name":"홍길동","phone":"010-1234-5678","address":"제주특별자치도 서귀포시 천지동"}
+           */
+          payload?: string;
+          photos?: string[];
+          documents?: string[];
+        };
+        'multipart/form-data': {
+          /** @example 홍길동 */
+          name?: string;
+          /** @example 010-1234-5678 */
+          phone?: string;
+          /** @example 123456 */
+          verificationCode?: string;
+          /** @example owner@example.com */
+          email?: string;
+          /** @example 제주특별자치도 서귀포시 천지동 */
+          address?: string;
+          /** @example EMPTY_HOUSE */
+          assetType?: string;
+          /** @example 72 */
+          areaSqm?: number;
+          /** @example 1 */
+          floorCount?: number;
+          /** @example true */
+          hasYard?: boolean;
+          /** @example true */
+          hasParking?: boolean;
+          /** @example 건물 관련 추가 설명 */
+          notes?: string;
+          /**
+           * @description 선택. multipart에서 JSON 문자열로 전달 가능. payload와 개별 필드가 겹치면 개별 필드 우선
+           * @example {"name":"홍길동","phone":"010-1234-5678","address":"제주특별자치도 서귀포시 천지동"}
+           */
+          payload?: string;
+          photos?: string[];
+          documents?: string[];
+        };
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  ApplicationsController_myApplications: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  ApplicationsController_analyzeMyApplication: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
         headers: {
           [name: string]: unknown;
         };
@@ -578,7 +619,32 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['VerificationCodeResponseDto'];
+        };
+      };
+    };
+  };
+  ApplicationsController_requestSubmitCode: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RequestVerificationDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['VerificationCodeResponseDto'];
+        };
       };
     };
   };
@@ -792,57 +858,6 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  AssetsController_createInquiry: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateInquiryDto'];
-      };
-    };
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  FilesController_upload: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'multipart/form-data': {
-          /** Format: binary */
-          file: string;
-          name: string;
-          phone: string;
-          refType?: string;
-          refId?: string;
-        };
-      };
-    };
-    responses: {
-      201: {
         headers: {
           [name: string]: unknown;
         };

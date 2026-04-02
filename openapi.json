@@ -1,29 +1,6 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/api/v1/auth/signup": {
-      "post": {
-        "operationId": "AuthController_signup",
-        "summary": "회원가입",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SignupDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "회원가입 성공 (JWT 토큰 반환)"
-          }
-        },
-        "tags": ["auth"]
-      }
-    },
     "/api/v1/auth/login": {
       "post": {
         "operationId": "AuthController_login",
@@ -65,17 +42,17 @@
         ]
       }
     },
-    "/api/v1/applications": {
+    "/api/v1/applications/autofill": {
       "post": {
-        "operationId": "ApplicationsController_create",
-        "summary": "신청 접수 (회원가입 없이 이름/전화번호 기반)",
+        "operationId": "ApplicationsController_autofill",
+        "summary": "GPS/사진 기반 빈집 정보 자동입력 추천",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/QuickApplicationDto"
+                "$ref": "#/components/schemas/AutofillHouseDto"
               }
             }
           }
@@ -88,10 +65,224 @@
         "tags": ["applications"]
       }
     },
+    "/api/v1/applications": {
+      "post": {
+        "operationId": "ApplicationsController_create",
+        "summary": "신청 접수 (회원가입 없이 이름/전화번호 기반)",
+        "parameters": [
+          {
+            "name": "content-type",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "JSON 또는 multipart/form-data 지원. multipart 사용 시 일반 필드는 그대로 넣고, 사진은 photos, 서류는 documents 필드에 파일 첨부하세요.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "홍길동"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "example": "010-1234-5678"
+                  },
+                  "verificationCode": {
+                    "type": "string",
+                    "example": "123456"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "owner@example.com"
+                  },
+                  "address": {
+                    "type": "string",
+                    "example": "제주특별자치도 서귀포시 천지동"
+                  },
+                  "assetType": {
+                    "type": "string",
+                    "example": "EMPTY_HOUSE"
+                  },
+                  "areaSqm": {
+                    "type": "number",
+                    "example": 72
+                  },
+                  "floorCount": {
+                    "type": "number",
+                    "example": 1
+                  },
+                  "hasYard": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "hasParking": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "notes": {
+                    "type": "string",
+                    "example": "건물 관련 추가 설명"
+                  },
+                  "payload": {
+                    "type": "string",
+                    "example": "{\"name\":\"홍길동\",\"phone\":\"010-1234-5678\",\"address\":\"제주특별자치도 서귀포시 천지동\"}",
+                    "description": "선택. multipart에서 JSON 문자열로 전달 가능. payload와 개별 필드가 겹치면 개별 필드 우선"
+                  },
+                  "photos": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  },
+                  "documents": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "홍길동"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "example": "010-1234-5678"
+                  },
+                  "verificationCode": {
+                    "type": "string",
+                    "example": "123456"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "owner@example.com"
+                  },
+                  "address": {
+                    "type": "string",
+                    "example": "제주특별자치도 서귀포시 천지동"
+                  },
+                  "assetType": {
+                    "type": "string",
+                    "example": "EMPTY_HOUSE"
+                  },
+                  "areaSqm": {
+                    "type": "number",
+                    "example": 72
+                  },
+                  "floorCount": {
+                    "type": "number",
+                    "example": 1
+                  },
+                  "hasYard": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "hasParking": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "notes": {
+                    "type": "string",
+                    "example": "건물 관련 추가 설명"
+                  },
+                  "payload": {
+                    "type": "string",
+                    "example": "{\"name\":\"홍길동\",\"phone\":\"010-1234-5678\",\"address\":\"제주특별자치도 서귀포시 천지동\"}",
+                    "description": "선택. multipart에서 JSON 문자열로 전달 가능. payload와 개별 필드가 겹치면 개별 필드 우선"
+                  },
+                  "photos": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  },
+                  "documents": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["applications"]
+      }
+    },
+    "/api/v1/applications/me": {
+      "get": {
+        "operationId": "ApplicationsController_myApplications",
+        "summary": "내 신청 목록 조회 (액세스 토큰 기반)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["applications"],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
+      }
+    },
+    "/api/v1/applications/{id}/analysis": {
+      "get": {
+        "operationId": "ApplicationsController_analyzeMyApplication",
+        "summary": "내 신청 건 AI 매물 분석 (액세스 토큰 기반)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["applications"],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
+      }
+    },
     "/api/v1/applications/lookup/request-code": {
       "post": {
         "operationId": "ApplicationsController_requestLookupCode",
-        "summary": "신청내역 조회용 인증번호 요청",
+        "summary": "인증번호 요청 (조회/신청 공용)",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -105,7 +296,44 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationCodeResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["applications"]
+      }
+    },
+    "/api/v1/applications/verification/request-code": {
+      "post": {
+        "operationId": "ApplicationsController_requestSubmitCode",
+        "summary": "신청용 인증번호 요청 (SMS 발송)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestVerificationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationCodeResponseDto"
+                }
+              }
+            }
           }
         },
         "tags": ["applications"]
@@ -463,81 +691,6 @@
         },
         "tags": ["assets"]
       }
-    },
-    "/api/v1/assets/{id}/inquiries": {
-      "post": {
-        "operationId": "AssetsController_createInquiry",
-        "summary": "개인 매물 임대 문의 접수",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateInquiryDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": ["assets"]
-      }
-    },
-    "/api/v1/files/upload": {
-      "post": {
-        "operationId": "FilesController_upload",
-        "summary": "신청용 파일 업로드 (회원가입 없이 사용 가능)",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "file": {
-                    "type": "string",
-                    "format": "binary"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "phone": {
-                    "type": "string"
-                  },
-                  "refType": {
-                    "type": "string"
-                  },
-                  "refId": {
-                    "type": "string"
-                  }
-                },
-                "required": ["file", "name", "phone"]
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": ["files"]
-      }
     }
   },
   "info": {
@@ -557,33 +710,19 @@
       }
     },
     "schemas": {
-      "SignupDto": {
+      "VerificationCodeResponseDto": {
         "type": "object",
         "properties": {
-          "email": {
+          "code": {
             "type": "string",
-            "example": "youth@example.com"
+            "example": "123456"
           },
-          "password": {
-            "type": "string",
-            "example": "StrongPass123!",
-            "description": "8~64자 영문/숫자/특수문자 조합"
-          },
-          "name": {
-            "type": "string",
-            "example": "홍길동"
-          },
-          "phone": {
-            "type": "string",
-            "example": "010-1234-5678"
-          },
-          "role": {
-            "type": "string",
-            "enum": ["ELDER", "YOUTH", "ADMIN"],
-            "example": "YOUTH"
+          "expiresInSeconds": {
+            "type": "number",
+            "example": 180
           }
         },
-        "required": ["email", "password", "name"]
+        "required": ["code", "expiresInSeconds"]
       },
       "LoginDto": {
         "type": "object",
@@ -599,74 +738,12 @@
         },
         "required": ["email", "password"]
       },
-      "ApplicationDocumentInputDto": {
+      "AutofillHouseDto": {
         "type": "object",
         "properties": {
-          "fileUrl": {
-            "type": "string",
-            "example": "https://cdn.example.com/docs/registry.pdf"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "PROPERTY_REGISTER",
-              "BUILDING_REGISTER",
-              "LAND_REGISTER",
-              "FAMILY_RELATION_CERTIFICATE",
-              "OTHER"
-            ],
-            "example": "PROPERTY_REGISTER"
-          }
-        },
-        "required": ["fileUrl"]
-      },
-      "QuickApplicationDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "홍길동",
-            "description": "신규 필드 (권장)"
-          },
-          "applicantName": {
-            "type": "string",
-            "example": "홍길동",
-            "description": "하위 호환 필드"
-          },
-          "phone": {
-            "type": "string",
-            "example": "010-1234-5678",
-            "description": "하이픈 포함 입력 허용"
-          },
-          "email": {
-            "type": "string",
-            "example": "owner@example.com"
-          },
-          "assetType": {
-            "type": "string",
-            "enum": ["EMPTY_HOUSE", "WAREHOUSE", "FIELD", "OTHER"],
-            "example": "EMPTY_HOUSE"
-          },
-          "detectedAssetType": {
-            "type": "string",
-            "enum": ["EMPTY_HOUSE", "WAREHOUSE", "FIELD", "OTHER"],
-            "example": "EMPTY_HOUSE"
-          },
           "address": {
             "type": "string",
             "example": "제주특별자치도 제주시 한림읍 ..."
-          },
-          "detectedAddress": {
-            "type": "string",
-            "example": "제주특별자치도 제주시 한림읍 ..."
-          },
-          "areaSqm": {
-            "type": "number",
-            "example": 72
-          },
-          "detectedAreaSqm": {
-            "type": "number",
-            "example": 72
           },
           "latitude": {
             "type": "number",
@@ -676,45 +753,38 @@
             "type": "number",
             "example": 126.5312
           },
+          "assetType": {
+            "type": "string",
+            "enum": ["EMPTY_HOUSE", "WAREHOUSE", "FIELD", "OTHER"],
+            "example": "EMPTY_HOUSE"
+          },
+          "areaSqm": {
+            "type": "number",
+            "example": 72
+          },
+          "floorCount": {
+            "type": "number",
+            "example": 1,
+            "description": "층수(단층=1)"
+          },
+          "hasYard": {
+            "type": "boolean",
+            "example": true,
+            "description": "마당 유무"
+          },
+          "hasParking": {
+            "type": "boolean",
+            "example": true,
+            "description": "주차 가능 여부"
+          },
           "photoUrls": {
             "example": ["https://cdn.example.com/building-1.jpg"],
             "type": "array",
             "items": {
               "type": "string"
             }
-          },
-          "documentUrls": {
-            "example": ["https://cdn.example.com/registry.pdf"],
-            "description": "레거시 문서 URL 리스트",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "documentFiles": {
-            "description": "문서 유형 포함 문서 리스트",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ApplicationDocumentInputDto"
-            }
-          },
-          "notes": {
-            "type": "string",
-            "example": "건물 관련 추가 설명"
-          },
-          "assetId": {
-            "type": "string",
-            "format": "uuid",
-            "deprecated": true,
-            "description": "더 이상 사용하지 않습니다. 신청 시 빈집 자산은 항상 신규 생성됩니다."
-          },
-          "desiredStartDate": {
-            "type": "string",
-            "example": "2026-05-01",
-            "format": "date"
           }
-        },
-        "required": ["phone"]
+        }
       },
       "RequestVerificationDto": {
         "type": "object",
@@ -813,40 +883,6 @@
           }
         },
         "required": ["status"]
-      },
-      "CreateInquiryDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "홍길동"
-          },
-          "phone": {
-            "type": "string",
-            "example": "010-1234-5678"
-          },
-          "email": {
-            "type": "string",
-            "example": "owner@example.com"
-          },
-          "purpose": {
-            "type": "string",
-            "example": "게스트하우스 운영"
-          },
-          "householdType": {
-            "type": "string",
-            "example": "가족"
-          },
-          "headCount": {
-            "type": "number",
-            "example": 2
-          },
-          "message": {
-            "type": "string",
-            "example": "현장 확인 가능한 날짜를 안내 부탁드립니다."
-          }
-        },
-        "required": ["name", "phone", "purpose"]
       }
     }
   }

@@ -4,9 +4,11 @@ import { useParams, useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { Text } from '@vapor-ui/core';
 import AppLayout from '@/components/layout/AppLayout';
+import Button, { ButtonPair } from '@/components/common/base/Button';
 import {
   useCreateApplication,
   useRequestLookupCode,
+  useVerifyAndLookup,
 } from '@/features/applications/queries';
 import { useApplyStore } from '@/stores/useApplyStore';
 
@@ -37,14 +39,21 @@ export default function StepLayout({ children }: StepLayoutProps) {
     area,
     buildingType,
     verificationSent,
+    verificationCode,
     setVerificationSent,
+    setCodeError,
     reset,
   } = useApplyStore();
 
   const createApplication = useCreateApplication();
   const requestLookupCode = useRequestLookupCode();
+  const verifyCode = useVerifyAndLookup();
 
-  const progress = `${((step - 1) / (TOTAL_STEPS - 1)) * 100}%`;
+  /* 전화번호: 숫자 기준 10자리 이상 (010-0000-0000) */
+  const isPhoneValid = phone.replace(/\D/g, '').length >= 10;
+  const canSendCode = name.trim().length > 0 && isPhoneValid;
+  const canNext = verificationCode.trim().length === 6;
+
   const stepLabel = STEP_LABELS[step - 1] ?? '';
 
   const handleSendCode = () => {
@@ -53,6 +62,16 @@ export default function StepLayout({ children }: StepLayoutProps) {
       {
         onSuccess: () => setVerificationSent(true),
         onError: () => setVerificationSent(true),
+      },
+    );
+  };
+
+  const handleVerifyCode = () => {
+    verifyCode.mutate(
+      { phone, code: verificationCode },
+      {
+        onSuccess: () => router.push('/apply/step/2'),
+        onError: () => setCodeError('인증번호가 일치하지 않습니다'),
       },
     );
   };
@@ -82,13 +101,22 @@ export default function StepLayout({ children }: StepLayoutProps) {
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
-        background: '#ffffff',
-        color: '#161616',
+        background: 'var(--color-bg-canvas)',
+        color: 'var(--color-fg-normal)',
       }}
     >
       {/* 헤더 */}
       {!isComplete ? (
-        <header style={{ flexShrink: 0, background: '#ffffff' }}>
+        <header
+          style={{
+            flexShrink: 0,
+            background: 'var(--color-bg-canvas)',
+            display: 'fixed',
+            width: '100%',
+            top: 0,
+            left: 0,
+          }}
+        >
           <div
             style={{
               display: 'flex',
@@ -108,7 +136,7 @@ export default function StepLayout({ children }: StepLayoutProps) {
                 background: 'transparent',
                 fontSize: '22px',
                 cursor: 'pointer',
-                color: '#344054',
+                color: 'var(--color-fg-subtle)',
                 lineHeight: 1,
               }}
               onClick={() => router.push('/apply/landing')}
@@ -121,25 +149,32 @@ export default function StepLayout({ children }: StepLayoutProps) {
           </div>
 
           <div
-            style={{ width: '100%', height: '4px', background: '#ebeff5' }}
             aria-hidden="true"
+            style={{ display: 'flex', gap: '6px', padding: '0 20px' }}
           >
-            <div
-              style={{
-                width: progress,
-                height: '100%',
-                background: '#2368b7',
-                transition: 'width 0.3s ease',
-              }}
-            />
+            {[1, 2, 3, 4].map((seg) => (
+              <div
+                key={seg}
+                style={{
+                  flex: 1,
+                  height: '4px',
+                  borderRadius: '2px',
+                  background:
+                    step >= seg
+                      ? 'var(--color-brand-interactive)'
+                      : 'var(--color-border-normal)',
+                  transition: 'background 0.2s ease',
+                }}
+              />
+            ))}
           </div>
 
           <p
             style={{
               margin: 0,
-              padding: '6px 20px 10px',
+              padding: 'var(--gap-xs) var(--screen-margin) var(--gap-sm)',
               fontSize: '12px',
-              color: '#98a2b3',
+              color: 'var(--color-fg-placeholder)',
             }}
           >
             {stepLabel}
@@ -165,87 +200,54 @@ export default function StepLayout({ children }: StepLayoutProps) {
       {!isComplete ? (
         <footer
           style={{
+            display: 'fixed',
+            width: '100%',
+            bottom: 0,
+            left: 0,
             flexShrink: 0,
-            padding: '12px 20px 28px',
-            borderTop: '1px solid #ebeff5',
-            background: '#ffffff',
+            padding: 'var(--gap-sm) var(--screen-margin) var(--gap-lg)',
+            borderTop: '1px solid var(--color-border-normal)',
+            background: 'var(--color-bg-canvas)',
           }}
         >
           {/* Step 1: 단일 버튼 */}
           {step === 1 ? (
-            <button
-              type="button"
-              disabled={requestLookupCode.isPending}
-              style={{
-                width: '100%',
-                height: '54px',
-                borderRadius: '14px',
-                border: 0,
-                background: '#1f66b3',
-                color: '#ffffff',
-                fontSize: '16px',
-                fontWeight: 700,
-                cursor: requestLookupCode.isPending ? 'not-allowed' : 'pointer',
-                opacity: requestLookupCode.isPending ? 0.7 : 1,
-              }}
+            <Button
+              disabled={
+                verificationSent
+                  ? !canNext || verifyCode.isPending
+                  : !canSendCode || requestLookupCode.isPending
+              }
               onClick={() => {
                 if (!verificationSent) {
                   handleSendCode();
                 } else {
-                  router.push('/apply/step/2');
+                  handleVerifyCode();
                 }
               }}
             >
               {requestLookupCode.isPending
                 ? '발송 중...'
-                : verificationSent
-                  ? '다음'
-                  : '인증번호 받기'}
-            </button>
+                : verifyCode.isPending
+                  ? '확인 중...'
+                  : verificationSent
+                    ? '다음'
+                    : '인증번호 받기'}
+            </Button>
           ) : null}
 
           {/* Step 2–3: 이전 | 다음 */}
           {step === 2 || step === 3 ? (
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '10px',
+            <ButtonPair
+              leftButton={{
+                children: '이전',
+                onClick: () => router.push(`/apply/step/${step - 1}`),
               }}
-            >
-              <button
-                type="button"
-                style={{
-                  height: '54px',
-                  borderRadius: '14px',
-                  border: '1px solid #d6deea',
-                  background: '#ffffff',
-                  color: '#344054',
-                  fontSize: '16px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-                onClick={() => router.push(`/apply/step/${step - 1}`)}
-              >
-                이전
-              </button>
-              <button
-                type="button"
-                style={{
-                  height: '54px',
-                  borderRadius: '14px',
-                  border: 0,
-                  background: '#1d2240',
-                  color: '#ffffff',
-                  fontSize: '16px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-                onClick={() => router.push(`/apply/step/${step + 1}`)}
-              >
-                다음
-              </button>
-            </div>
+              rightButton={{
+                children: '다음',
+                onClick: () => router.push(`/apply/step/${step + 1}`),
+              }}
+            />
           ) : null}
 
           {/* Step 4: 이전 | 다음(제출) */}
@@ -254,60 +256,26 @@ export default function StepLayout({ children }: StepLayoutProps) {
               {createApplication.isError ? (
                 <p
                   style={{
-                    margin: '0 0 8px',
-                    color: '#ef4444',
-                    fontSize: '13px',
+                    margin: '0 0 var(--gap-xs)',
+                    color: 'var(--color-error)',
+                    fontSize: '14px',
                     textAlign: 'center',
                   }}
                 >
                   신청 중 오류가 발생했습니다. 다시 시도해주세요.
                 </p>
               ) : null}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '10px',
+              <ButtonPair
+                leftButton={{
+                  children: '이전',
+                  onClick: () => router.push('/apply/step/3'),
                 }}
-              >
-                <button
-                  type="button"
-                  style={{
-                    height: '54px',
-                    borderRadius: '14px',
-                    border: '1px solid #d6deea',
-                    background: '#ffffff',
-                    color: '#344054',
-                    fontSize: '16px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => router.push('/apply/step/3')}
-                >
-                  이전
-                </button>
-                <button
-                  type="button"
-                  disabled={createApplication.isPending}
-                  style={{
-                    height: '54px',
-                    borderRadius: '14px',
-                    border: 0,
-                    background: createApplication.isPending
-                      ? '#7d93b2'
-                      : '#1d2240',
-                    color: '#ffffff',
-                    fontSize: '16px',
-                    fontWeight: 700,
-                    cursor: createApplication.isPending
-                      ? 'not-allowed'
-                      : 'pointer',
-                  }}
-                  onClick={handleSubmit}
-                >
-                  {createApplication.isPending ? '제출 중...' : '다음'}
-                </button>
-              </div>
+                rightButton={{
+                  children: createApplication.isPending ? '제출 중...' : '다음',
+                  disabled: createApplication.isPending,
+                  onClick: handleSubmit,
+                }}
+              />
             </>
           ) : null}
         </footer>
