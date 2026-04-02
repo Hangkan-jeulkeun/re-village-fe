@@ -1,10 +1,9 @@
 name: Auto Merge PR
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches:
-      - main
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
 
 jobs:
   auto-merge:
@@ -14,14 +13,18 @@ jobs:
       contents: write
 
     steps:
-      - name: Wait for mergeability check
-        run: sleep 10
+      - name: CI 실패 시 중단
+        if: ${{ github.event.workflow_run.conclusion != 'success' }}
+        run: |
+          echo "❌ CI 실패 — 머지 중단"
+          exit 1
 
       - name: Auto merge if no conflicts
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          PR_NUMBER=${{ github.event.pull_request.number }}
+          BRANCH="${{ github.event.workflow_run.head_branch }}"
+          PR_NUMBER=$(gh pr list --head "$BRANCH" --repo ${{ github.repository }} --json number -q '.[0].number')
 
           MERGEABLE=$(gh pr view $PR_NUMBER \
             --repo ${{ github.repository }} \
