@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { notFound, useParams, useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
-import { Button, Text, TextInput } from "@vapor-ui/core";
+import { Text } from "@vapor-ui/core";
+import Button, { ButtonPair } from "@/components/common/base/Button";
+import Input from "@/components/common/inputs/Input";
 import AppLayout from "@/components/layout/AppLayout";
 import { formatPhoneNumber } from "@/utils/formatPhoneNumber";
 
@@ -118,7 +119,7 @@ export default function ApplyStepPage() {
     >
       {!isComplete ? (
         <>
-          <header style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 20px 18px" }}>
+          <header style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", padding: "var(--size-space-300) var(--size-space-250) var(--size-space-225)" }}>
             <button
               type="button"
               style={{ position: "absolute", left: "20px", border: 0, background: "transparent", fontSize: "30px", cursor: "pointer" }}
@@ -148,7 +149,7 @@ export default function ApplyStepPage() {
         </>
       ) : null}
 
-      <main style={{ flex: 1, padding: "36px 20px 24px" }}>
+      <main style={{ flex: 1, padding: "var(--size-space-450) var(--size-space-250) var(--size-space-300)" }}>
         <section style={{ marginBottom: "28px" }}>
           <Text typography="heading2" style={{ fontWeight: 700, lineHeight: 1.2 }}>
             {content.title}
@@ -160,28 +161,27 @@ export default function ApplyStepPage() {
 
         {step === 1 ? (
           <section style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            <label style={{ fontSize: "15px", fontWeight: 700 }} htmlFor="name">
-              이름 <span style={{ color: "#ef4444" }}>*</span>
-            </label>
-            <TextInput id="name" placeholder="예: 홍길동" style={{ height: "50px", borderRadius: "14px" }} />
-
-            <label style={{ fontSize: "15px", fontWeight: 700 }} htmlFor="phone">
-              전화번호 <span style={{ color: "#ef4444" }}>*</span>
-            </label>
-            <TextInput
+            <Input
+              name="name"
+              label="이름"
+              required
+              id="name"
+              placeholder="예: 홍길동"
+            />
+            <Input
+              name="phone"
+              label="전화번호"
+              required
               id="phone"
               type="tel"
               inputMode="tel"
               placeholder="예: 010-4473-3342"
               value={phoneNumber}
+              description="신청 결과 안내에 사용됩니다"
               onChange={(event) => {
                 setPhoneNumber(formatPhoneNumber(event.target.value));
               }}
-              style={{ height: "50px", borderRadius: "14px" }}
             />
-            <Text typography="body3" style={{ color: "#74829a", lineHeight: 1.5 }}>
-              신청 결과 안내에 사용됩니다
-            </Text>
           </section>
         ) : null}
 
@@ -213,8 +213,8 @@ export default function ApplyStepPage() {
             </Text>
             <div style={{ display: "flex", gap: "10px", marginTop: "6px", flexWrap: "wrap" }}>
               {uploadedPhotos.map((photo) => (
-                <span key={photo} style={{ display: "flex", alignItems: "flex-end", width: "72px", height: "72px", padding: "8px", borderRadius: "14px", border: "1px solid #dce4ee", background: "#ffffff" }}>
-                  <span style={{ display: "block", width: "100%", padding: "4px 6px", borderRadius: "8px", background: "rgb(255 255 255 / 0.88)", color: "#344054", fontSize: "10px", lineHeight: 1.35, textAlign: "center", wordBreak: "break-all" }}>{photo}</span>
+                <span key={photo} style={{ display: "flex", alignItems: "flex-end", width: "72px", height: "72px", padding: "var(--container-padding-sm)", borderRadius: "14px", border: "1px solid #dce4ee", background: "#ffffff" }}>
+                  <span style={{ display: "block", width: "100%", padding: "var(--size-space-050) 6px", borderRadius: "8px", background: "rgb(255 255 255 / 0.88)", color: "#344054", fontSize: "10px", lineHeight: 1.35, textAlign: "center", wordBreak: "break-all" }}>{photo}</span>
                 </span>
               ))}
               <button
@@ -264,18 +264,18 @@ export default function ApplyStepPage() {
                 : "PDF, JPG, PNG 파일을 추가로 첨부할 수 있습니다."}
             </Text>
             {governmentLinked ? (
-              <div style={{ display: "grid", gap: "4px", padding: "14px 16px", border: "1px solid #cfe0ff", borderRadius: "16px", background: "#edf4ff" }}>
+              <div style={{ display: "grid", gap: "4px", padding: "var(--size-space-175) var(--size-space-200)", border: "1px solid #cfe0ff", borderRadius: "16px", background: "#edf4ff" }}>
                 <strong>정부24 연계 완료</strong>
                 <span>건축물대장/토지대장 기준으로 건물 정보가 자동 입력되었습니다.</span>
               </div>
             ) : null}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", padding: "16px", border: "1px solid #dde6f0", borderRadius: "18px", background: "#fbfcfe" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", padding: "var(--container-padding-lg)", border: "1px solid #dde6f0", borderRadius: "18px", background: "#fbfcfe" }}>
               <div>
                 <Text typography="body3" style={{ color: "#344054", fontWeight: 700 }}>
                   첨부 서류
                 </Text>
                 {attachedDocuments.length > 0 ? (
-                  <ul style={{ display: "grid", gap: "8px", marginTop: "10px", paddingLeft: "16px", color: "#344054", fontSize: "14px" }}>
+                  <ul style={{ display: "grid", gap: "8px", marginTop: "10px", paddingLeft: "var(--size-space-200)", color: "#344054", fontSize: "14px" }}>
                     {attachedDocuments.map((document) => (
                       <li key={document}>{document}</li>
                     ))}
@@ -294,51 +294,13 @@ export default function ApplyStepPage() {
                 직접 첨부
               </button>
             </div>
-            <label style={{ fontSize: "15px", fontWeight: 700 }} htmlFor="buildingType">
-              건물 종류
-            </label>
-            <select
-              id="buildingType"
-              style={{ width: "100%", height: "50px", padding: "0 16px", border: "1px solid #d9e1ea", borderRadius: "14px", background: "#ffffff", fontSize: "16px" }}
-              value={buildingType}
-              onChange={(event) => {
-                setBuildingType(event.target.value);
-              }}
-            >
-              <option>단독 주택</option>
-              <option>다가구 주택</option>
-              <option>근린 생활 시설</option>
-            </select>
-            <label style={{ fontSize: "15px", fontWeight: 700 }} htmlFor="address">
-              주소
-            </label>
-            <TextInput
-              id="address"
-              placeholder="예: 제주시 ..."
-              value={address}
-              onChange={(event) => {
-                setAddress(event.target.value);
-              }}
-              style={{ height: "50px", borderRadius: "14px" }}
-            />
-            <label style={{ fontSize: "15px", fontWeight: 700 }} htmlFor="area">
-              면적
-            </label>
-            <TextInput
-              id="area"
-              placeholder="예: 84㎡"
-              value={area}
-              onChange={(event) => {
-                setArea(event.target.value);
-              }}
-              style={{ height: "50px", borderRadius: "14px" }}
-            />
+
           </section>
         ) : null}
 
         {step === 4 ? (
           <section style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            <div style={{ padding: "18px 16px", border: "1px solid #d8e0ea", borderRadius: "20px", background: "#fbfcff" }}>
+            <div style={{ padding: "var(--size-space-225) var(--size-space-200)", border: "1px solid #d8e0ea", borderRadius: "20px", background: "#fbfcff" }}>
               <dl style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 <div style={{ display: "grid", gridTemplateColumns: "84px 1fr", gap: "12px" }}>
                   <dt>신청자</dt>
@@ -364,8 +326,8 @@ export default function ApplyStepPage() {
             </div>
             <div style={{ display: "flex", gap: "10px", marginTop: "6px", flexWrap: "wrap" }}>
               {uploadedPhotos.slice(0, 3).map((photo) => (
-                <span key={photo} style={{ display: "flex", alignItems: "flex-end", width: "72px", height: "72px", padding: "8px", borderRadius: "14px", border: "1px solid #dce4ee", background: "#ffffff" }}>
-                  <span style={{ display: "block", width: "100%", padding: "4px 6px", borderRadius: "8px", background: "rgb(255 255 255 / 0.88)", color: "#344054", fontSize: "10px", lineHeight: 1.35, textAlign: "center", wordBreak: "break-all" }}>{photo}</span>
+                <span key={photo} style={{ display: "flex", alignItems: "flex-end", width: "72px", height: "72px", padding: "var(--container-padding-sm)", borderRadius: "14px", border: "1px solid #dce4ee", background: "#ffffff" }}>
+                  <span style={{ display: "block", width: "100%", padding: "var(--size-space-050) 6px", borderRadius: "8px", background: "rgb(255 255 255 / 0.88)", color: "#344054", fontSize: "10px", lineHeight: 1.35, textAlign: "center", wordBreak: "break-all" }}>{photo}</span>
                 </span>
               ))}
             </div>
@@ -375,76 +337,48 @@ export default function ApplyStepPage() {
         {isComplete ? (
           <section style={{ display: "flex", flex: 1, flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
             <div aria-hidden="true" style={{ width: "188px", height: "188px", borderRadius: "32px", background: "#f2f5fa" }} />
-            <Link
-              href="/"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: "100%",
-                height: "54px",
-                marginTop: "24px",
-                borderRadius: "16px",
-                background: "#1f66b3",
-                color: "#ffffff",
-                fontWeight: 700,
+            <Button
+              style={{ marginTop: "24px" }}
+              onClick={() => {
+                router.push("/");
               }}
             >
               메인으로 이동
-            </Link>
-            <Link
-              href="/lookup/history"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: "100%",
-                height: "54px",
-                marginTop: "12px",
-                borderRadius: "16px",
-                background: "#ffffff",
-                color: "#1d2a44",
-                border: "1px solid #d6deea",
-                fontWeight: 700,
+            </Button>
+            <Button
+              tone="secondary"
+              style={{ marginTop: "12px" }}
+              onClick={() => {
+                router.push("/lookup/history");
               }}
             >
               신청 내역 확인
-            </Link>
+            </Button>
           </section>
         ) : null}
       </main>
 
       {!isComplete ? (
-        <footer style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", padding: "16px 20px 20px", borderTop: "1px solid #ebeff5", background: "rgb(255 255 255 / 0.96)" }}>
-          <button
-            type="button"
-            style={{ height: "54px", borderRadius: "16px", border: 0, background: "#7d93b2", color: "#ffffff", fontSize: "18px", fontWeight: 700 }}
-            onClick={() => {
-              if (step === 1) {
-                router.push("/apply/landing");
-                return;
-              }
+        <footer style={{ padding: "var(--size-space-200) var(--size-space-250) var(--size-space-250)", borderTop: "1px solid #ebeff5", background: "rgb(255 255 255 / 0.96)" }}>
+          <ButtonPair
+            leftButton={{
+              children: "이전",
+              onClick: () => {
+                if (step === 1) {
+                  router.push("/apply/landing");
+                  return;
+                }
 
-              router.push(`/apply/step/${step - 1}`);
+                router.push(`/apply/step/${step - 1}`);
+              },
             }}
-          >
-            이전
-          </button>
-          <Link
-            href={nextHref}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              height: "54px",
-              borderRadius: "16px",
-              background: "#1d2240",
-              color: "#ffffff",
-              fontWeight: 700,
+            rightButton={{
+              children: step === TOTAL_STEPS - 1 ? "접수 완료" : "다음",
+              onClick: () => {
+                router.push(nextHref);
+              },
             }}
-          >
-            {step === TOTAL_STEPS - 1 ? "접수 완료" : "다음"}
-          </Link>
+          />
         </footer>
       ) : null}
     </AppLayout>

@@ -9,11 +9,11 @@ export default function PhoneVerificationPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "24px 20px",
+        padding: "var(--page-padding-compact)",
         background: "linear-gradient(180deg, #ffffff 0%, #f7f9fd 100%)",
       }}
     >
-      <section style={{ width: "100%", padding: "28px 22px", border: "1px solid #e3e8ef", borderRadius: "24px", background: "#ffffff" }}>
+      <section style={{ width: "100%", padding: "var(--size-space-350) var(--size-space-275)", border: "1px solid #e3e8ef", borderRadius: "24px", background: "#ffffff" }}>
         <Text typography="heading3" style={{ fontWeight: 700 }}>
           휴대폰 인증번호로 조회
         </Text>

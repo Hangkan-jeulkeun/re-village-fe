@@ -27,12 +27,12 @@ export default function AdminDashboardPage() {
     <PCLayout
       style={{
         minHeight: "100dvh",
-        padding: "40px 24px 56px",
+        padding: "var(--size-space-500) var(--size-space-300) var(--size-space-700)",
         background:
           "radial-gradient(circle at top right, rgb(49 116 220 / 0.12), transparent 24%), linear-gradient(180deg, #f5f8fc 0%, #eef2f7 100%)",
       }}
     >
-      <section style={{ display: "grid", gridTemplateColumns: "1.3fr 0.7fr", gap: "24px", padding: "28px", border: "1px solid #dce4ee", borderRadius: "28px", background: "#ffffff" }}>
+      <section style={{ display: "grid", gridTemplateColumns: "1.3fr 0.7fr", gap: "24px", padding: "var(--size-space-350)", border: "1px solid #dce4ee", borderRadius: "28px", background: "#ffffff" }}>
         <div>
           <Text typography="body3" style={{ color: "#2a6eb8", fontWeight: 700 }}>
             Dashboard
@@ -45,15 +45,15 @@ export default function AdminDashboardPage() {
           </Text>
         </div>
         <div style={{ display: "grid", gap: "14px" }}>
-          <article style={{ padding: "18px 20px", borderRadius: "22px", background: "#f8fbff" }}>
+          <article style={{ padding: "var(--size-space-225) var(--size-space-250)", borderRadius: "22px", background: "#f8fbff" }}>
             <strong>24</strong>
             <span>전체 신청</span>
           </article>
-          <article style={{ padding: "18px 20px", borderRadius: "22px", background: "#f8fbff" }}>
+          <article style={{ padding: "var(--size-space-225) var(--size-space-250)", borderRadius: "22px", background: "#f8fbff" }}>
             <strong>7</strong>
             <span>처리 대기</span>
           </article>
-          <article style={{ padding: "18px 20px", borderRadius: "22px", background: "#f8fbff" }}>
+          <article style={{ padding: "var(--size-space-225) var(--size-space-250)", borderRadius: "22px", background: "#f8fbff" }}>
             <strong>5</strong>
             <span>오늘 알림 발송</span>
           </article>
@@ -61,7 +61,7 @@ export default function AdminDashboardPage() {
       </section>
 
       <section style={{ display: "grid", gridTemplateColumns: "1.1fr 0.9fr", gap: "24px", marginTop: "24px" }}>
-        <article style={{ padding: "24px", border: "1px solid #dce4ee", borderRadius: "28px", background: "#ffffff" }}>
+        <article style={{ padding: "var(--container-padding-xl)", border: "1px solid #dce4ee", borderRadius: "28px", background: "#ffffff" }}>
           <Text typography="heading4" style={{ fontWeight: 700 }}>
             알림 발송 센터
           </Text>
@@ -75,20 +75,20 @@ export default function AdminDashboardPage() {
           </div>
         </article>
 
-        <article style={{ padding: "24px", border: "1px solid #dce4ee", borderRadius: "28px", background: "#ffffff" }}>
+        <article style={{ padding: "var(--container-padding-xl)", border: "1px solid #dce4ee", borderRadius: "28px", background: "#ffffff" }}>
           <Text typography="heading4" style={{ fontWeight: 700 }}>
             최근 처리 이력
           </Text>
           <ul style={{ display: "grid", gap: "14px", marginTop: "18px" }}>
-            <li style={{ display: "grid", gap: "4px", padding: "14px 16px", borderRadius: "18px", background: "#f8fbff" }}>
+            <li style={{ display: "grid", gap: "4px", padding: "var(--size-space-175) var(--size-space-200)", borderRadius: "18px", background: "#f8fbff" }}>
               <strong>RV-1024</strong>
               <span>서류 검토 중으로 상태 변경</span>
             </li>
-            <li style={{ display: "grid", gap: "4px", padding: "14px 16px", borderRadius: "18px", background: "#f8fbff" }}>
+            <li style={{ display: "grid", gap: "4px", padding: "var(--size-space-175) var(--size-space-200)", borderRadius: "18px", background: "#f8fbff" }}>
               <strong>RV-1025</strong>
               <span>현장 확인 요청 알림 발송</span>
             </li>
-            <li style={{ display: "grid", gap: "4px", padding: "14px 16px", borderRadius: "18px", background: "#f8fbff" }}>
+            <li style={{ display: "grid", gap: "4px", padding: "var(--size-space-175) var(--size-space-200)", borderRadius: "18px", background: "#f8fbff" }}>
               <strong>RV-1026</strong>
               <span>승인 완료 및 안내 문자 발송</span>
             </li>
@@ -96,7 +96,7 @@ export default function AdminDashboardPage() {
         </article>
       </section>
 
-      <section style={{ marginTop: "24px", padding: "24px", border: "1px solid #dce4ee", borderRadius: "28px", background: "#ffffff" }}>
+      <section style={{ marginTop: "24px", padding: "var(--container-padding-xl)", border: "1px solid #dce4ee", borderRadius: "28px", background: "#ffffff" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
           <Text typography="heading4" style={{ fontWeight: 700 }}>
             신청 관리
@@ -109,7 +109,7 @@ export default function AdminDashboardPage() {
 
         <div style={{ display: "grid", gap: "12px", marginTop: "20px" }}>
           {APPLICATIONS.map((application) => (
-            <article key={application.id} style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr) auto", gap: "16px", padding: "18px 16px", border: "1px solid #e3e9f2", borderRadius: "18px", background: "#fbfcfe" }}>
+            <article key={application.id} style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr) auto", gap: "16px", padding: "var(--size-space-225) var(--size-space-200)", border: "1px solid #e3e9f2", borderRadius: "18px", background: "#fbfcfe" }}>
               <div>
                 <span style={{ display: "block", marginBottom: "6px", color: "#667085", fontSize: "13px" }}>신청번호</span>
                 <strong>{application.id}</strong>

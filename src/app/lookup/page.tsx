@@ -7,7 +7,7 @@ export default function LookupPage() {
     <AppLayout
       style={{
         minHeight: "100%",
-        padding: "28px 20px 36px",
+        padding: "var(--page-padding-mobile)",
         background: "linear-gradient(180deg, #ffffff 0%, #f7f9fd 100%)",
       }}
     >
@@ -19,12 +19,12 @@ export default function LookupPage() {
       </Text>
 
       <div style={{ display: "grid", gap: "14px", marginTop: "24px" }}>
-        <Link href="/lookup/phone-verification" style={{ display: "flex", flexDirection: "column", gap: "8px", padding: "22px 18px", border: "1px solid #e0e7f0", borderRadius: "22px", background: "#ffffff" }}>
+        <Link href="/lookup/phone-verification" style={{ display: "flex", flexDirection: "column", gap: "8px", padding: "var(--size-space-275) var(--size-space-225)", border: "1px solid #e0e7f0", borderRadius: "22px", background: "#ffffff" }}>
           <strong>휴대폰 인증번호로 조회</strong>
           <span>SMS 인증번호로 본인 신청 건을 확인합니다.</span>
         </Link>
 
-        <Link href="/lookup/history" style={{ display: "flex", flexDirection: "column", gap: "8px", padding: "22px 18px", border: "1px solid #e0e7f0", borderRadius: "22px", background: "#ffffff" }}>
+        <Link href="/lookup/history" style={{ display: "flex", flexDirection: "column", gap: "8px", padding: "var(--size-space-275) var(--size-space-225)", border: "1px solid #e0e7f0", borderRadius: "22px", background: "#ffffff" }}>
           <strong>신청 내역 조회 페이지</strong>
           <span>처리 상태, 담당자 업데이트, 첨부 자료를 확인합니다.</span>
         </Link>
