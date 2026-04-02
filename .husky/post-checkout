@@ -1,0 +1,13 @@
+#!/bin/sh
+PREV_HEAD=$1
+NEW_HEAD=$2
+BRANCH_SWITCH=$3
+
+# 브랜치 전환 시에만 실행 (파일 체크아웃 제외)
+if [ "$BRANCH_SWITCH" = "1" ]; then
+  BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null)
+  if [ "$BRANCH" = "main" ]; then
+    echo "main 브랜치 — 최신 변경사항 pull 중..."
+    git pull origin main
+  fi
+fi
