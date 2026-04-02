@@ -31,9 +31,10 @@ jobs:
           fi
 
           # Generate title from branch name
-          # feat/add-login → feat: add login
+          # feat/#12-login-page → feat: login page
           TYPE=$(echo "$BRANCH" | grep -oE '^(feat|fix|docs|style|refactor|test|chore)' || echo "")
-          DESCRIPTION=$(echo "$BRANCH" | sed 's|^[^/]*/||' | tr '-' ' ')
+          ISSUE_NUM=$(echo "$BRANCH" | grep -oE '#[0-9]+' | grep -oE '[0-9]+' || echo "")
+          DESCRIPTION=$(echo "$BRANCH" | sed 's|^[^/]*/||' | sed 's|#[0-9]*-\?||' | tr '-' ' ' | xargs)
 
           if [ -n "$TYPE" ]; then
             TITLE="$TYPE: $DESCRIPTION"
@@ -47,7 +48,14 @@ jobs:
             BODY="- $TITLE"
           fi
 
-          FULL_BODY=$(printf '## 변경 사항\n%s\n\n## 체크리스트\n- [ ] 코드 리뷰 완료\n- [ ] 테스트 통과' "$BODY")
+          # Add closing keyword if issue number found
+          if [ -n "$ISSUE_NUM" ]; then
+            CLOSE_LINE="Closes #$ISSUE_NUM"
+          else
+            CLOSE_LINE=""
+          fi
+
+          FULL_BODY=$(printf '## 변경 사항\n%s\n\n## 체크리스트\n- [ ] 코드 리뷰 완료\n- [ ] 테스트 통과\n\n%s' "$BODY" "$CLOSE_LINE")
 
           gh pr create \
             --title "$TITLE" \
