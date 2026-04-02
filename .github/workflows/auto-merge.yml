@@ -26,12 +26,22 @@ jobs:
           BRANCH="${{ github.event.workflow_run.head_branch }}"
           PR_NUMBER=$(gh pr list --head "$BRANCH" --repo ${{ github.repository }} --json number -q '.[0].number')
 
-          MERGEABLE=$(gh pr view $PR_NUMBER \
-            --repo ${{ github.repository }} \
-            --json mergeable \
-            -q '.mergeable')
+          if [ -z "$PR_NUMBER" ]; then
+            echo "PR 없음 — 종료"
+            exit 0
+          fi
 
-          echo "Mergeable: $MERGEABLE"
+          # mergeability 계산 대기 (최대 30초)
+          for i in 1 2 3; do
+            MERGEABLE=$(gh pr view $PR_NUMBER \
+              --repo ${{ github.repository }} \
+              --json mergeable \
+              -q '.mergeable')
+            echo "Mergeable: $MERGEABLE"
+            [ "$MERGEABLE" != "UNKNOWN" ] && break
+            echo "계산 중... 재시도 ($i/3)"
+            sleep 10
+          done
 
           if [ "$MERGEABLE" = "MERGEABLE" ]; then
             gh pr merge $PR_NUMBER \
