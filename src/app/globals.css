@@ -1,6 +1,148 @@
+/**
+ * 한집줄크 Design Tokens
+ * =====================
+ * 자동 생성 — 피그마 Variables 기반
+ * Vapor UI color-generator (keyColor: #2563EB) 기반
+ * 고령자 접근성 기준 적용 (WCAG AA 4.5:1 이상)
+ *
+ * 컬렉션 구조:
+ *   Primitive  — 원시 색상값 (직접 사용 지양)
+ *   Semantic   — 역할 기반 토큰 (컴포넌트에서 사용)
+ *   Size       — 사이즈 토큰
+ */
+
+/* ============================================================
+   Primitive — color-hanjip
+   원시 색상값. 컴포넌트에서 직접 쓰지 말고 Semantic 토큰 참조
+   ============================================================ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand */
+  --color-hanjip-brand: #2a2e54; /* Splash, GNB 전용 · 12.98:1 AAA */
+
+  /* Primary (Vapor color-generator, keyColor #2563EB) */
+  --color-hanjip-050: #eff8ff;
+  --color-hanjip-100: #c6e6ff;
+  --color-hanjip-200: #8ccdff;
+  --color-hanjip-300: #51a9f7;
+  --color-hanjip-400: #4198f2;
+  --color-hanjip-500: #2a72e5;
+  --color-hanjip-600: #0957c8; /* CTA 버튼 · 6.54:1 AA */
+  --color-hanjip-700: #0043b3; /* hover/pressed · 8.56:1 AAA */
+  --color-hanjip-800: #002b9b;
+  --color-hanjip-900: #000e84;
+
+  /* Gray */
+  --color-gray-900: #111928;
+  --color-gray-600: #4b5563;
+  --color-gray-400: #6b7280;
+  --color-gray-200: #d1d5db;
+  --color-gray-100: #f3f4f6;
+  --color-gray-050: #f9fafb;
+
+  /* Feedback */
+  --color-danger-default: #e02424;
+  --color-danger-light: #fde8e8;
+  --color-success-default: #057a55;
+  --color-success-light: #def7ec;
+  --color-warning-default: #9f580a;
+  --color-warning-light: #fdf6b2;
+
+  /* Canvas */
+  --color-canvas: #ffffff;
+  --color-white: #ffffff;
+
+  /* Status Badge */
+  --status-신청완료-text: #1a56db;
+  --status-신청완료-bg: #ebf5ff;
+  --status-검토중-text: #9f580a;
+  --status-검토중-bg: #fdf6b2;
+  --status-리모델링-text: #c05621;
+  --status-리모델링-bg: #feecdc;
+  --status-임대-text: #057a55;
+  --status-임대-bg: #def7ec;
+  --status-완료-text: #4b5563;
+  --status-완료-bg: #f3f4f6;
+  --status-반려-text: #e02424;
+  --status-반려-bg: #fde8e8;
+}
+
+/* ============================================================
+   Semantic — light mode
+   역할 기반 토큰. 컴포넌트에서 이 토큰을 참조할 것
+   ============================================================ */
+:root {
+  /* Brand */
+  --color-brand-primary: var(--color-hanjip-brand);
+  --color-brand-interactive: var(--color-hanjip-600);
+  --color-brand-hover: var(--color-hanjip-700);
+  --color-brand-light: var(--color-hanjip-050);
+
+  /* Background */
+  --color-bg-primary-100: var(--color-hanjip-050);
+  --color-bg-primary-200: var(--color-hanjip-brand);
+  --color-bg-canvas: var(--color-canvas);
+  --color-bg-canvas-sub: var(--color-gray-050);
+  --color-bg-overlay: var(--color-canvas);
+
+  /* Foreground */
+  --color-fg-primary: var(--color-hanjip-600);
+  --color-fg-primary-hover: var(--color-hanjip-700);
+  --color-fg-normal: var(--color-gray-900);
+  --color-fg-subtle: var(--color-gray-600);
+  --color-fg-placeholder: var(--color-gray-400);
+  --color-fg-inverse: var(--color-white);
+
+  /* Border */
+  --color-border-normal: var(--color-gray-200);
+  --color-border-primary: var(--color-hanjip-600);
+  --color-border-error: var(--color-danger-default);
+
+  /* Status */
+  --color-error: var(--color-danger-default);
+  --color-error-bg: var(--color-danger-light);
+  --color-success: var(--color-success-default);
+  --color-success-bg: var(--color-success-light);
+  --color-warning: var(--color-warning-default);
+  --color-warning-bg: var(--color-warning-light);
+
+  /* Badge */
+  --badge-신청완료-text: var(--status-신청완료-text);
+  --badge-신청완료-bg: var(--status-신청완료-bg);
+  --badge-검토중-text: var(--status-검토중-text);
+  --badge-검토중-bg: var(--status-검토중-bg);
+  --badge-리모델링-text: var(--status-리모델링-text);
+  --badge-리모델링-bg: var(--status-리모델링-bg);
+  --badge-임대-text: var(--status-임대-text);
+  --badge-임대-bg: var(--status-임대-bg);
+  --badge-완료-text: var(--status-완료-text);
+  --badge-완료-bg: var(--status-완료-bg);
+  --badge-반려-text: var(--status-반려-text);
+  --badge-반려-bg: var(--status-반려-bg);
+}
+
+/* ============================================================
+   Size — dimension tokens
+   고령자 접근성 기준 적용 (Vapor 기본 대비 상향)
+   ============================================================ */
+:root {
+  /* Vapor 기본 */
+  --size-025: 2px;
+  --size-050: 4px;
+  --size-075: 6px;
+  --size-100: 8px;
+  --size-150: 12px;
+  --size-175: 14px;
+  --size-200: 16px;
+  --size-225: 18px;
+  --size-250: 20px;
+  --size-300: 24px;
+  --size-400: 32px;
+  --size-500: 40px;
+  --size-600: 48px;
+  --size-700: 56px;
+  --size-800: 64px;
+
+  /* Vapor spacing alias (Vapor 내부 의존성) */
   --size-space-050: 4px;
   --size-space-100: 8px;
   --size-space-150: 12px;
@@ -16,6 +158,37 @@
   --size-space-500: 40px;
   --size-space-600: 48px;
   --size-space-700: 56px;
+
+  /* Senior 확장 — 고령자 접근성 */
+  --size-senior-input: 60px;
+  --size-senior-btn: 60px;
+  --size-senior-radius: 12px;
+  --size-senior-border: 2px;
+  --size-senior-font: 20px;
+  --size-senior-label: 18px;
+  --size-senior-title: 28px;
+
+  /* Spacing */
+  --gap-xs: 8px;
+  --gap-sm: 12px;
+  --gap-md: 16px;
+  --gap-lg: 24px;
+  --gap-xl: 32px;
+  --gap-2xl: 40px;
+
+  /* Mobile Layout */
+  --screen-margin: 20px;
+  --navbar-height: 56px;
+  --safe-area-top: 44px;
+  --safe-area-bottom: 34px;
+
+  /* Web Grid */
+  --grid-col: 80px;
+  --grid-gutter: 16px;
+  --grid-margin: 32px;
+  --sidebar-width: 240px;
+
+  /* Legacy aliases — 하위 호환 */
   --container-padding-sm: var(--size-space-100);
   --container-padding-md: var(--size-space-150);
   --container-padding-lg: var(--size-space-200);
@@ -31,12 +204,9 @@
     var(--size-space-400);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* ============================================================
+   Base styles
+   ============================================================ */
 
 html {
   height: 100%;
@@ -53,8 +223,8 @@ body {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
+  color: var(--color-fg-normal);
+  background: var(--color-bg-canvas);
   font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -73,14 +243,8 @@ a {
 
 button,
 a,
-[role="button"],
+[role='button'],
 label[for],
 summary {
   cursor: pointer;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
 }

@@ -1,41 +1,41 @@
 .button {
   width: 100%;
-  min-height: 56px;
-  border-radius: 20px;
-  font-size: 20px;
+  min-height: var(--size-senior-btn);
+  border-radius: var(--size-senior-radius);
+  font-size: var(--size-senior-font);
   font-weight: 700;
   line-height: 1.2;
 }
 
 .primary {
-  background: #1f5fc4;
-  color: #ffffff;
+  background: var(--color-brand-interactive);
+  color: var(--color-fg-inverse);
 }
 
 .primary:hover,
 .primary:focus-visible,
 .primary:active {
-  background: #1b56b0;
-  color: #ffffff;
+  background: var(--color-brand-hover);
+  color: var(--color-fg-inverse);
 }
 
 .secondary {
-  border: 1px solid #cfd8e3;
-  background: #ffffff;
-  color: #5d5d5d;
+  border: var(--size-senior-border) solid var(--color-border-normal);
+  background: var(--color-bg-canvas);
+  color: var(--color-fg-subtle);
 }
 
 .secondary:hover,
 .secondary:focus-visible,
 .secondary:active {
-  background: #f8fafc;
-  color: #4a4a4a;
+  background: var(--color-bg-canvas-sub);
+  color: var(--color-fg-normal);
 }
 
 .buttonGroup {
   display: flex;
   width: 100%;
-  gap: 12px;
+  gap: var(--gap-sm);
 }
 
 .buttonItem {
