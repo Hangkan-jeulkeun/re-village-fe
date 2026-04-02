@@ -1,4 +1,4 @@
-import { apiClient, apiFetch } from '@/lib/apiClient';
+import { apiClient, apiFetch, API_BASE_URL } from '@/lib/apiClient';
 import type { TokenResponse } from '@/types/auth';
 import type { components, operations } from '@/types/api';
 
@@ -62,7 +62,7 @@ export const applicationsApi = {
     body: VerifyLookupRequest,
   ): Promise<TokenResponse> => {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/verification/verify`,
+      `${API_BASE_URL}/api/v1/applications/verification/verify`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
