@@ -33,19 +33,12 @@ export default function Home() {
   return (
     <AppLayout
       style={{
-<<<<<<< fe/#5-layout-settings
         minHeight: "100%",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
         padding: "var(--page-padding-wide)",
-=======
-        minHeight: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        padding: '48px 24px 32px',
->>>>>>> main
+
         background:
           'radial-gradient(circle at top, rgb(48 116 220 / 0.22), transparent 34%), linear-gradient(180deg, #0d1326 0%, #121a31 100%)',
         color: '#ffffff',
