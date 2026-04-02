@@ -1,7 +1,18 @@
 {
+  "plugins": ["@prettier/plugin-xml"],
   "semi": true,
   "singleQuote": true,
   "tabWidth": 2,
   "trailingComma": "all",
-  "printWidth": 80
+  "printWidth": 80,
+  "overrides": [
+    {
+      "files": "*.svg",
+      "options": {
+        "parser": "xml",
+        "bracketSameLine": false,
+        "xmlWhitespaceSensitivity": "ignore"
+      }
+    }
+  ]
 }
