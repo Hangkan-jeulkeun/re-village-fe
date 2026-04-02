@@ -21,10 +21,6 @@ export type CreateApplicationRequest =
 export type RequestLookupCodeRequest =
   components['schemas']['RequestVerificationDto'];
 export type VerifyLookupRequest = components['schemas']['VerifyCodeDto'];
-export type LookupDetailRequest =
-  components['schemas']['LookupApplicationDetailDto'];
-export type CancelApplicationRequest =
-  components['schemas']['CancelApplicationDto'];
 export type UpdateApplicationStatusRequest =
   components['schemas']['UpdateStatusDto'];
 
@@ -61,13 +57,9 @@ export const applicationsApi = {
   verifyAndLookup: (body: VerifyLookupRequest) =>
     apiClient.POST('/api/v1/applications/lookup/verify', { body }),
 
-  lookupDetail: (body: LookupDetailRequest) =>
-    apiClient.POST('/api/v1/applications/lookup/detail', { body }),
-
-  cancel: (id: string, body: CancelApplicationRequest) =>
+  cancel: (id: string) =>
     apiClient.PATCH('/api/v1/applications/{id}/cancel', {
       params: { path: { id } },
-      body,
     }),
 
   adminSummary: (month?: string) =>

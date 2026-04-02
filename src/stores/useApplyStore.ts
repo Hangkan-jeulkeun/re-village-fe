@@ -9,6 +9,7 @@ interface ApplyFormState {
   area: string;
   buildingType: string;
   photos: File[];
+  maxReachedStep: number;
 }
 
 interface ApplyStore extends ApplyFormState {
@@ -20,6 +21,7 @@ interface ApplyStore extends ApplyFormState {
   setArea: (area: string) => void;
   setBuildingType: (buildingType: string) => void;
   setPhotos: (photos: File[]) => void;
+  setMaxReachedStep: (step: number) => void;
   reset: () => void;
 }
 
@@ -32,6 +34,7 @@ const initialState: ApplyFormState = {
   area: '',
   buildingType: '단독 주택',
   photos: [],
+  maxReachedStep: 1,
 };
 
 export const useApplyStore = create<ApplyStore>((set) => ({
@@ -44,5 +47,6 @@ export const useApplyStore = create<ApplyStore>((set) => ({
   setArea: (area) => set({ area }),
   setBuildingType: (buildingType) => set({ buildingType }),
   setPhotos: (photos) => set({ photos }),
+  setMaxReachedStep: (maxReachedStep) => set({ maxReachedStep }),
   reset: () => set(initialState),
 }));

@@ -1,8 +1,10 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { Text, Toast } from '@vapor-ui/core';
+import { WarningIcon } from '@vapor-ui/icons';
 import AppLayout from '@/components/layout/AppLayout';
 import Button, { ButtonPair } from '@/components/common/base/Button';
 import {
@@ -41,7 +43,9 @@ export default function StepLayout({ children }: StepLayoutProps) {
     photos,
     verificationSent,
     verificationCode,
+    maxReachedStep,
     setVerificationSent,
+    setMaxReachedStep,
     reset,
   } = useApplyStore();
 
@@ -57,9 +61,16 @@ export default function StepLayout({ children }: StepLayoutProps) {
 
   const stepLabel = STEP_LABELS[step - 1] ?? '';
 
+  /* 순차 진입 가드 */
+  const needsRedirect = step > maxReachedStep;
+  useEffect(() => {
+    if (needsRedirect) router.replace('/apply/step/1');
+  }, [needsRedirect, router]);
+  if (needsRedirect) return null;
+
   const handleSendCode = () => {
     requestSubmitCode.mutate(
-      { phone },
+      { name, phone },
       {
         onSuccess: () => setVerificationSent(true),
         onError: () => setVerificationSent(true),
@@ -69,14 +80,18 @@ export default function StepLayout({ children }: StepLayoutProps) {
 
   const handleVerifyCode = () => {
     verifySubmitCode.mutate(
-      { phone, code: verificationCode },
+      { name, phone, code: verificationCode },
       {
-        onSuccess: () => router.push('/apply/step/2'),
+        onSuccess: () => {
+          setMaxReachedStep(2);
+          router.push('/apply/step/2');
+        },
         onError: () =>
           toastManager.add({
-            title: '인증 실패',
-            description: '인증번호가 일치하지 않습니다. 다시 확인해주세요.',
+            title: '인증번호가 일치하지 않아요!',
             colorPalette: 'danger',
+            icon: <WarningIcon />,
+            close: true,
           }),
       },
     );
@@ -96,6 +111,7 @@ export default function StepLayout({ children }: StepLayoutProps) {
       {
         onSuccess: () => {
           reset();
+          setMaxReachedStep(TOTAL_STEPS);
           router.push(`/apply/step/${TOTAL_STEPS}`);
         },
       },
@@ -252,7 +268,14 @@ export default function StepLayout({ children }: StepLayoutProps) {
               }}
               rightButton={{
                 children: '다음',
-                onClick: () => router.push(`/apply/step/${step + 1}`),
+                disabled:
+                  step === 2
+                    ? photos.length === 0
+                    : !buildingType.trim() || !address.trim() || !area.trim(),
+                onClick: () => {
+                  setMaxReachedStep(step + 1);
+                  router.push(`/apply/step/${step + 1}`);
+                },
               }}
             />
           ) : null}

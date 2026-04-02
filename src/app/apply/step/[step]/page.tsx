@@ -88,7 +88,6 @@ export default function ApplyStepPage() {
     () => photos.map((file) => URL.createObjectURL(file)),
     [photos],
   );
-  const [governmentLinked, setGovernmentLinked] = useState(false);
   const [attachedDocuments, setAttachedDocuments] = useState<string[]>([]);
 
   useEffect(() => {
@@ -410,7 +409,7 @@ export default function ApplyStepPage() {
             value={buildingType}
             onValueChange={setBuildingType}
             placeholder="건물 종류를 선택해주세요"
-            disabled={governmentLinked}
+            disabled
             options={[
               { value: '단독 주택', label: '단독 주택' },
               { value: '다가구 주택', label: '다가구 주택' },
@@ -423,7 +422,7 @@ export default function ApplyStepPage() {
             label="주소"
             placeholder="예: 제주특별자치도 서귀포시..."
             value={address}
-            readOnly={governmentLinked}
+            readOnly
             onChange={(e) => setAddress(e.target.value)}
           />
 
@@ -433,7 +432,7 @@ export default function ApplyStepPage() {
             inputMode="decimal"
             placeholder="예: 84.5"
             value={area}
-            readOnly={governmentLinked}
+            readOnly
             onChange={(e) => setArea(e.target.value)}
           />
         </section>
@@ -505,41 +504,14 @@ export default function ApplyStepPage() {
                 <dt style={{ color: 'var(--color-fg-placeholder)' }}>
                   건물 사진
                 </dt>
-                <dd style={{ margin: 0 }}>
-                  {photos.length === 0 ? (
-                    <span
-                      style={{
-                        color: 'var(--color-fg-normal)',
-                        fontWeight: 500,
-                      }}
-                    >
-                      —
-                    </span>
-                  ) : (
-                    <div
-                      style={{
-                        display: 'flex',
-                        gap: 'var(--gap-xs)',
-                        flexWrap: 'wrap',
-                      }}
-                    >
-                      {photos.map((photo, index) => (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          key={`review-${photo.name}-${index}`}
-                          src={previewUrls[index]}
-                          alt={photo.name}
-                          style={{
-                            width: '56px',
-                            height: '56px',
-                            borderRadius: 'var(--size-senior-radius)',
-                            border: '1px solid var(--color-border-normal)',
-                            objectFit: 'cover',
-                          }}
-                        />
-                      ))}
-                    </div>
-                  )}
+                <dd
+                  style={{
+                    margin: 0,
+                    color: 'var(--color-fg-normal)',
+                    fontWeight: 500,
+                  }}
+                >
+                  {photos.length === 0 ? '—' : `${photos.length}장 첨부`}
                 </dd>
               </div>
             </dl>
