@@ -9,12 +9,15 @@
     "lint": "eslint",
     "prepare": "husky",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "gen:types": "node scripts/gen-types.mjs"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.96.1",
     "@vapor-ui/core": "^1.2.0",
     "@vapor-ui/icons": "^1.1.0",
     "next": "16.2.2",
+    "openapi-fetch": "^0.17.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "zustand": "^5.0.12"
@@ -36,6 +39,7 @@
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
+    "openapi-typescript": "^7.13.0",
     "prettier": "^3.8.1",
     "typescript": "^5"
   }
