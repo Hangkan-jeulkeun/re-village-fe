@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Button, Text, TextInput } from '@vapor-ui/core';
+import { Box, HStack, Text, VStack } from '@vapor-ui/core';
 
+import Button from '@/components/common/base/Button';
+import Input from '@/components/common/inputs/Input';
 import { useRequestCode, useVerifyCode } from '@/features/applications/queries';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { TokenResponse } from '@/types/auth';
@@ -66,77 +68,124 @@ export function PhoneVerificationForm() {
   const canVerify = codeSent && code.trim().length > 0 && !isVerifying;
 
   return (
-    <section
+    <Box
       style={{
         width: '100%',
+        maxWidth: '36rem',
         padding: 'var(--size-space-350) var(--size-space-275)',
-        border: '1px solid #e3e8ef',
-        borderRadius: '24px',
-        background: '#ffffff',
+        border: '1px solid var(--color-border-normal)',
+        borderRadius: 'calc(var(--size-space-250) + var(--size-050))',
+        background: 'var(--color-bg-canvas)',
+        boxShadow: '0 18px 42px rgb(15 23 42 / 0.08)',
       }}
     >
-      <Text typography="heading3" style={{ fontWeight: 700 }}>
-        휴대폰 인증번호로 조회
-      </Text>
-      <Text
-        typography="body2"
-        style={{ marginTop: '10px', color: '#667085', lineHeight: 1.6 }}
-      >
-        신청 시 입력한 휴대폰 번호와 인증번호를 입력하면 본인 신청 건을 조회할
-        수 있습니다.
-      </Text>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '14px',
-          marginTop: '14px',
-        }}
-      >
-        <TextInput
-          placeholder="이름"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          style={{ height: '52px', borderRadius: '14px' }}
-        />
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <TextInput
-            placeholder="휴대폰 번호"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            style={{ flex: 1, height: '52px', borderRadius: '14px' }}
-          />
-          <Button
-            size="md"
-            color="primary"
-            disabled={!name || !phone || isRequestingCode}
-            onClick={handleRequestCode}
-            style={{ height: '52px', borderRadius: '14px', flexShrink: 0 }}
+      <VStack style={{ gap: 'var(--size-space-300)' }}>
+        <VStack style={{ gap: 'var(--size-space-100)' }}>
+          <Text
+            typography="heading5"
+            style={{
+              color: 'var(--color-fg-primary)',
+            }}
           >
-            인증번호 받기
-          </Button>
-        </div>
-        <TextInput
-          placeholder="인증번호 6자리"
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          style={{ height: '52px', borderRadius: '14px' }}
-        />
-      </div>
-      <Button
-        size="lg"
-        color="primary"
-        disabled={!canVerify}
-        onClick={handleVerify}
-        style={{
-          width: '100%',
-          height: '54px',
-          marginTop: '18px',
-          borderRadius: '16px',
-        }}
-      >
-        조회하기
-      </Button>
-    </section>
+            유저 인증 만료
+          </Text>
+          <Text
+            typography="heading3"
+            style={{
+              color: 'var(--color-fg-normal)',
+            }}
+          >
+            휴대폰 인증번호로 조회
+          </Text>
+          <Text
+            typography="body2"
+            style={{
+              color: 'var(--color-fg-subtle)',
+              lineHeight: 1.6,
+              wordBreak: 'keep-all',
+            }}
+          >
+            신청 시 입력한 휴대폰 번호와 인증번호를 입력하면 본인 신청 건을
+            조회할 수 있습니다.
+          </Text>
+        </VStack>
+
+        <VStack style={{ gap: 'var(--size-space-100)' }}>
+          <Input
+            name="name"
+            label="이름"
+            placeholder="이름을 입력해주세요"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+
+          <HStack
+            style={{
+              width: '100%',
+              alignItems: 'stretch',
+              gap: 'var(--size-space-100)',
+            }}
+          >
+            <Box style={{ flex: '1 1 0', minWidth: 0 }}>
+              <Input
+                name="phone"
+                label="휴대폰 번호"
+                placeholder="휴대폰 번호를 입력해주세요"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </Box>
+            <Box
+              style={{
+                width:
+                  'calc(var(--size-space-600) * 2 + var(--size-space-050))',
+                flexShrink: 0,
+                display: 'flex',
+                alignItems: 'flex-end',
+                paddingBottom: 'var(--size-space-150)',
+              }}
+            >
+              <Button
+                type="button"
+                size="md"
+                disabled={!name || !phone || isRequestingCode}
+                onClick={handleRequestCode}
+                style={{
+                  minHeight: 'var(--size-senior-input)',
+                  borderRadius: 'var(--size-senior-radius)',
+                  padding: '0 var(--size-space-150)',
+                }}
+              >
+                <Text
+                  typography="body1"
+                  style={{ color: 'var(--color-white)' }}
+                >
+                  인증번호 받기
+                </Text>
+              </Button>
+            </Box>
+          </HStack>
+
+          <Input
+            name="code"
+            label="인증번호"
+            placeholder="인증번호 6자리를 입력해주세요"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+          />
+        </VStack>
+
+        <Button
+          type="button"
+          disabled={!canVerify}
+          onClick={handleVerify}
+          style={{
+            marginTop: 'var(--size-space-050)',
+          }}
+        >
+          조회하기
+        </Button>
+      </VStack>
+    </Box>
   );
 }

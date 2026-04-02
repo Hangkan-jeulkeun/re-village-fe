@@ -1,4 +1,7 @@
+import { Suspense } from 'react';
+
 import AppLayout from '@/components/layout/AppLayout';
+import { PageLoader } from '@/components/common/PageLoader';
 import { PhoneVerificationForm } from '@/features/lookup/PhoneVerificationForm';
 
 export default function LookupLoginPage() {
@@ -13,7 +16,9 @@ export default function LookupLoginPage() {
         background: 'linear-gradient(180deg, #ffffff 0%, #f7f9fd 100%)',
       }}
     >
-      <PhoneVerificationForm />
+      <Suspense fallback={<PageLoader />}>
+        <PhoneVerificationForm />
+      </Suspense>
     </AppLayout>
   );
 }

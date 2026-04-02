@@ -1,6 +1,5 @@
-import type { ComponentPropsWithoutRef, ReactNode } from "react";
-import { Field, TextInput } from "@vapor-ui/core";
-import styles from "./FieldControl.module.css";
+import type { ComponentPropsWithoutRef, ReactNode } from 'react';
+import { Box, Field, Text, TextInput, VStack } from '@vapor-ui/core';
 
 type FieldRootProps = ComponentPropsWithoutRef<typeof Field.Root>;
 type FieldLabelProps = ComponentPropsWithoutRef<typeof Field.Label>;
@@ -8,21 +7,22 @@ type FieldDescriptionProps = ComponentPropsWithoutRef<typeof Field.Description>;
 type TextInputProps = ComponentPropsWithoutRef<typeof TextInput>;
 
 export interface InputProps
-  extends Omit<TextInputProps, "children">,
-    Pick<FieldRootProps, "name" | "validationMode" | "disabled"> {
+  extends
+    Omit<TextInputProps, 'children'>,
+    Pick<FieldRootProps, 'name' | 'validationMode' | 'disabled'> {
   label?: ReactNode;
   description?: ReactNode;
   error?: ReactNode;
-  errorMatch?: ComponentPropsWithoutRef<typeof Field.Error>["match"];
+  errorMatch?: ComponentPropsWithoutRef<typeof Field.Error>['match'];
   success?: ReactNode;
-  successMatch?: ComponentPropsWithoutRef<typeof Field.Success>["match"];
+  successMatch?: ComponentPropsWithoutRef<typeof Field.Success>['match'];
   optionalText?: ReactNode;
   rootClassName?: string;
   labelClassName?: string;
   descriptionClassName?: string;
   inputClassName?: string;
-  labelProps?: Omit<FieldLabelProps, "children" | "className">;
-  descriptionProps?: Omit<FieldDescriptionProps, "children" | "className">;
+  labelProps?: Omit<FieldLabelProps, 'children' | 'className'>;
+  descriptionProps?: Omit<FieldDescriptionProps, 'children' | 'className'>;
 }
 
 export default function Input({
@@ -52,33 +52,77 @@ export default function Input({
       name={name}
       validationMode={validationMode}
       disabled={disabled}
-      className={[styles.field, rootClassName].filter(Boolean).join(" ")}
+      className={rootClassName}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--gap-sm)',
+        width: '100%',
+      }}
     >
       {hasLabel ? (
         <Field.Label
           {...labelProps}
-          className={[styles.label, labelClassName].filter(Boolean).join(" ")}
+          className={labelClassName}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--gap-xs)',
+          }}
         >
-          <span className={styles.labelText}>
-            {label}
+          <Box
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--size-space-050)',
+              flexWrap: 'wrap',
+            }}
+          >
+            <Text
+              typography="body1"
+              style={{
+                color: 'var(--color-fg-normal)',
+                fontWeight: 700,
+                lineHeight: 1.4,
+              }}
+            >
+              {label}
+            </Text>
             {required ? (
-              <span className={styles.requiredMark}>
-                {" "}
+              <Text
+                typography="body1"
+                style={{ color: 'var(--color-error)', fontWeight: 700 }}
+              >
                 *
-              </span>
+              </Text>
             ) : null}
             {!required && optionalText ? (
-              <span className={styles.optionalText}>
-                {" "}
+              <Text
+                typography="body2"
+                style={{
+                  color: 'var(--color-fg-placeholder)',
+                  fontWeight: 700,
+                  lineHeight: 1.4,
+                }}
+              >
                 {optionalText}
-              </span>
+              </Text>
             ) : null}
-          </span>
+          </Box>
           <TextInput
             {...inputProps}
             required={required}
             disabled={disabled}
-            className={[styles.input, inputClassName].filter(Boolean).join(" ")}
+            className={inputClassName}
+            style={{
+              width: '100%',
+              minHeight: 'var(--size-senior-input)',
+              borderRadius: 'var(--size-senior-radius)',
+              fontSize: 'var(--size-senior-font)',
+              color: 'var(--color-fg-subtle)',
+              padding: '0 var(--size-space-250)',
+              ...inputProps.style,
+            }}
           />
         </Field.Label>
       ) : (
@@ -86,38 +130,68 @@ export default function Input({
           {...inputProps}
           required={required}
           disabled={disabled}
-          className={[styles.input, inputClassName].filter(Boolean).join(" ")}
+          className={inputClassName}
+          style={{
+            width: '100%',
+            minHeight: 'var(--size-senior-input)',
+            borderRadius: 'var(--size-senior-radius)',
+            fontSize: 'var(--size-senior-font)',
+            color: 'var(--color-fg-subtle)',
+            padding: '0 var(--size-space-250)',
+            ...inputProps.style,
+          }}
         />
       )}
 
       {description ? (
         <Field.Description
           {...descriptionProps}
-          className={[styles.description, descriptionClassName]
-            .filter(Boolean)
-            .join(" ")}
+          className={descriptionClassName}
         >
-          {description}
+          <Text
+            typography="body2"
+            style={{
+              color: 'var(--color-fg-subtle)',
+              fontWeight: 500,
+              lineHeight: 1.5,
+            }}
+          >
+            {description}
+          </Text>
         </Field.Description>
       ) : null}
 
-      {error ? (
-        <Field.Error
-          match={errorMatch}
-          className={[styles.message, styles.error].join(" ")}
-        >
-          {error}
-        </Field.Error>
-      ) : null}
+      <VStack style={{ gap: 'var(--size-space-050)' }}>
+        {error ? (
+          <Field.Error match={errorMatch}>
+            <Text
+              typography="body2"
+              style={{
+                color: 'var(--color-error)',
+                fontWeight: 600,
+                lineHeight: 1.5,
+              }}
+            >
+              {error}
+            </Text>
+          </Field.Error>
+        ) : null}
 
-      {success ? (
-        <Field.Success
-          match={successMatch}
-          className={[styles.message, styles.success].join(" ")}
-        >
-          {success}
-        </Field.Success>
-      ) : null}
+        {success ? (
+          <Field.Success match={successMatch}>
+            <Text
+              typography="body2"
+              style={{
+                color: 'var(--color-success)',
+                fontWeight: 600,
+                lineHeight: 1.5,
+              }}
+            >
+              {success}
+            </Text>
+          </Field.Success>
+        ) : null}
+      </VStack>
     </Field.Root>
   );
 }

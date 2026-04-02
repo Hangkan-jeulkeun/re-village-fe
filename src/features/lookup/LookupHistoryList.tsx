@@ -1,15 +1,19 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Box, Button, HStack, Text, VStack } from '@vapor-ui/core';
+import { useQueryClient } from '@tanstack/react-query';
 
+import { ConfirmAlert } from '@/components/common/ConfirmAlert';
 import { PageLoader } from '@/components/common/PageLoader';
+import { useTopToastStore } from '@/stores/useTopToastStore';
 
-import { useMyApplications } from './queries';
+import { ApplicationStepLine } from './ApplicationStepLine';
+import { lookupKeys, useCancelApplication, useMyApplications } from './queries';
 import {
   DEFAULT_ASSET_IMAGE,
   LOOKUP_ASSET_IMAGE,
@@ -46,16 +50,7 @@ const STATUS_STEP: Record<AppStatus, number> = {
   REJECTED: 4,
 };
 
-const STEP_LABELS = ['접수', '검토 중', '리모델링', '임대 중', '반환'] as const;
-
 const DONE_STATUSES = new Set<AppStatus>(['COMPLETED', 'REJECTED']);
-
-function formatDotDate(value?: string): string {
-  if (!value) return '';
-  const d = new Date(value);
-  if (isNaN(d.getTime())) return '';
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
-}
 
 function formatLookupAddress(value?: string): string {
   if (!value) return '주소 없음';
@@ -237,87 +232,123 @@ function InProgressCard({
   const label = LOOKUP_ASSET_LABEL[item.assetType] ?? item.assetType;
   const step = STATUS_STEP[item.status] ?? 0;
 
+  const [alertOpen, setAlertOpen] = useState(false);
+  const showToast = useTopToastStore((s) => s.show);
+  const queryClient = useQueryClient();
+  const { mutate: cancelApplication, isPending: isCancelling } =
+    useCancelApplication();
+
+  const handleCancelConfirm = () => {
+    cancelApplication(item.id, {
+      onSuccess: () => {
+        setAlertOpen(false);
+        showToast('신청 취소되었습니다');
+        void queryClient.invalidateQueries({
+          queryKey: lookupKeys.myApplications(),
+        });
+      },
+      onError: () => {
+        setAlertOpen(false);
+      },
+    });
+  };
+
   return (
-    <VStack
-      style={{
-        ...cardStyle,
-        animation: 'slideUpFade var(--duration-slow) var(--ease-out) both',
-        animationDelay: `${index * 55}ms`,
-      }}
-    >
-      <HStack
+    <>
+      <VStack
         style={{
-          display: 'grid',
-          gridTemplateColumns:
-            'calc(var(--size-800) + var(--size-300)) minmax(0, 1fr)',
-          gap: 'var(--size-space-200)',
-          alignItems: 'start',
+          ...cardStyle,
+          animation: 'slideUpFade var(--duration-slow) var(--ease-out) both',
+          animationDelay: `${index * 55}ms`,
         }}
       >
-        <HouseThumbnail imageSrc={imageSrc} />
-
-        <VStack
+        <HStack
           style={{
-            height: 'calc(var(--size-800) + var(--size-300))',
-            justifyContent: 'space-between',
-            minWidth: 0,
+            display: 'grid',
+            gridTemplateColumns:
+              'calc(var(--size-800) + var(--size-300)) minmax(0, 1fr)',
+            gap: 'var(--size-space-200)',
+            alignItems: 'start',
           }}
         >
-          <Text typography="heading3" style={{ wordBreak: 'keep-all' }}>
-            {formatLookupAddress(item.address)}
-          </Text>
-          <VStack style={{ display: 'grid', gap: 'var(--size-space-050)' }}>
-            <Text
-              typography="body1"
-              style={{
-                color: 'var(--color-fg-subtle)',
-                fontWeight: 700,
-                lineHeight: 1.4,
-              }}
-            >
-              {label}
+          <HouseThumbnail imageSrc={imageSrc} />
+
+          <VStack
+            style={{
+              height: 'calc(var(--size-800) + var(--size-300))',
+              justifyContent: 'space-between',
+              minWidth: 0,
+            }}
+          >
+            <Text typography="heading3" style={{ wordBreak: 'keep-all' }}>
+              {formatLookupAddress(item.address)}
             </Text>
-            {/* {item.areaSqm != null ? (
+            <VStack style={{ display: 'grid', gap: 'var(--size-space-050)' }}>
               <Text
-                typography="body2"
-                style={{ color: 'var(--color-fg-placeholder)' }}
+                typography="body1"
+                style={{
+                  color: 'var(--color-fg-subtle)',
+                  fontWeight: 600,
+                  lineHeight: 1.4,
+                }}
               >
-                {item.areaSqm}㎡
+                {label}
               </Text>
-            ) : null} */}
+              {/* {item.areaSqm != null ? (
+                <Text
+                  typography="body2"
+                  style={{ color: 'var(--color-fg-placeholder)' }}
+                >
+                  {item.areaSqm}㎡
+                </Text>
+              ) : null} */}
+            </VStack>
           </VStack>
-        </VStack>
-      </HStack>
+        </HStack>
 
-      {item.lease ? (
-        <Text
-          typography="body2"
+        {item.lease ? (
+          <Text
+            typography="body2"
+            style={{
+              color: 'var(--color-fg-subtle)',
+              wordBreak: 'keep-all',
+            }}
+          >
+            {item.lease}
+          </Text>
+        ) : null}
+
+        <ApplicationStepLine activeIndex={step} />
+
+        <Box
           style={{
-            color: 'var(--color-fg-subtle)',
-            wordBreak: 'keep-all',
+            display: 'grid',
+            gridTemplateColumns: item.canCancel ? '1fr 1fr' : '1fr',
+            gap: 'var(--size-space-150)',
           }}
         >
-          {item.lease}
-        </Text>
-      ) : null}
+          <ActionButton tone="outline" href={`/lookup/detail?id=${item.id}`}>
+            신청 상세
+          </ActionButton>
+          {item.canCancel ? (
+            <ActionButton tone="danger" onClick={() => setAlertOpen(true)}>
+              신청 취소
+            </ActionButton>
+          ) : null}
+        </Box>
+      </VStack>
 
-      <StepLine activeIndex={step} />
-
-      <Box
-        style={{
-          display: 'grid',
-          gridTemplateColumns: item.status === 'RECEIVED' ? '1fr 1fr' : '1fr',
-          gap: 'var(--size-space-150)',
-        }}
-      >
-        <ActionButton tone="outline" href="/lookup/detail">
-          신청 상세
-        </ActionButton>
-        {item.canCancel ? (
-          <ActionButton tone="danger">신청 취소</ActionButton>
-        ) : null}
-      </Box>
-    </VStack>
+      <ConfirmAlert
+        open={alertOpen}
+        onOpenChange={setAlertOpen}
+        title="정말 취소하시겠습니까?"
+        description="취소하면 되돌릴 수 없습니다."
+        confirmLabel="신청 취소"
+        cancelLabel="취소"
+        onConfirm={handleCancelConfirm}
+        isPending={isCancelling}
+      />
+    </>
   );
 }
 
@@ -333,7 +364,6 @@ function CompletedCard({
     LOOKUP_ASSET_IMAGE[item.assetType] ??
     DEFAULT_ASSET_IMAGE;
   const label = LOOKUP_ASSET_LABEL[item.assetType] ?? item.assetType;
-  const appliedDate = formatDotDate(item.createdAt);
 
   const badgeStyle: CSSProperties =
     item.status === 'REJECTED'
@@ -371,7 +401,14 @@ function CompletedCard({
         >
           <Text
             typography="heading3"
-            style={{ color: 'var(--color-fg-normal)', wordBreak: 'keep-all' }}
+            style={{
+              color: 'var(--color-fg-normal)',
+              wordBreak: 'keep-all',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
           >
             {formatLookupAddress(item.address)}
           </Text>
@@ -383,9 +420,9 @@ function CompletedCard({
               fontWeight: 500,
             }}
           >
-            {appliedDate ? `신청일 ${appliedDate} · ` : ''}
+            {/* {appliedDate ? `신청일 ${appliedDate} · ` : ''} */}
             {label}
-            {item.areaSqm != null ? ` · ${item.areaSqm}㎡` : ''}
+            {/* {item.areaSqm != null ? ` · ${item.areaSqm}㎡` : ''} */}
           </Text>
         </VStack>
 
@@ -406,123 +443,12 @@ function CompletedCard({
         </Box>
       </HStack>
 
-      <ActionButton tone="outline" href="/lookup/detail?tab=analysis">
-        활용 안내
+      <ActionButton
+        tone="outline"
+        href={`/lookup/detail?id=${item.id}&tab=analysis`}
+      >
+        신청 상세
       </ActionButton>
-    </VStack>
-  );
-}
-
-function StepLine({ activeIndex }: { activeIndex: number }) {
-  return (
-    <VStack
-      style={{
-        display: 'grid',
-        gap: 'var(--size-space-150)',
-        padding: 'var(--size-space-100) 0',
-      }}
-    >
-      <Box
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
-          alignItems: 'center',
-        }}
-      >
-        {STEP_LABELS.map((label, index) => {
-          const isComplete = index < activeIndex;
-          const isActive = index === activeIndex;
-          const isLast = index === STEP_LABELS.length - 1;
-
-          return (
-            <Box
-              key={label}
-              style={{
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {!isLast ? (
-                <Box
-                  style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: 'calc(50% + 13px)',
-                    width: 'calc(100% - 26px)',
-                    height: '1px',
-                    transform: 'translateY(-50%)',
-                    borderRadius: '999px',
-                    background: isComplete
-                      ? 'var(--color-fg-primary)'
-                      : 'var(--color-bg-primary-100)',
-                    opacity: isComplete ? 0.65 : 1,
-                  }}
-                />
-              ) : null}
-
-              <Box
-                style={{
-                  position: 'relative',
-                  zIndex: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: isActive ? 'var(--size-space-300)' : 'var(--size-250)',
-                  height: isActive
-                    ? 'var(--size-space-300)'
-                    : 'var(--size-250)',
-                  borderRadius: '999px',
-                  border: isActive
-                    ? 'var(--size-025) solid color-mix(in srgb, var(--color-fg-primary) 25%, transparent)'
-                    : 'none',
-                  opacity: isActive ? 1 : isComplete ? 0.6 : 0.3,
-                  background: 'transparent',
-                }}
-              >
-                <Box
-                  style={{
-                    width: 'var(--size-150)',
-                    height: 'var(--size-150)',
-                    borderRadius: '999px',
-                    background: 'var(--color-fg-primary)',
-                  }}
-                />
-              </Box>
-            </Box>
-          );
-        })}
-      </Box>
-
-      <Box
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
-          gap: 'var(--size-space-100)',
-        }}
-      >
-        {STEP_LABELS.map((label, index) => {
-          const isActive = index === activeIndex;
-          const isDone = index < activeIndex;
-
-          return (
-            <Text
-              key={label}
-              typography="body3"
-              style={{
-                color: 'var(--color-fg-primary)',
-                fontWeight: isActive ? 700 : 500,
-                textAlign: 'center',
-                wordBreak: 'keep-all',
-                opacity: isActive ? 1 : isDone ? 0.6 : 0.3,
-              }}
-            >
-              {label}
-            </Text>
-          );
-        })}
-      </Box>
     </VStack>
   );
 }
@@ -531,10 +457,12 @@ function ActionButton({
   children,
   href,
   tone,
+  onClick,
 }: {
   children: ReactNode;
   href?: string;
   tone: 'outline' | 'danger';
+  onClick?: () => void;
 }) {
   const style: Record<'outline' | 'danger', CSSProperties> = {
     outline: {
@@ -551,6 +479,7 @@ function ActionButton({
   const button = (
     <Button
       size="lg"
+      onClick={onClick}
       style={{
         width: '100%',
         height: 'var(--size-500)',
