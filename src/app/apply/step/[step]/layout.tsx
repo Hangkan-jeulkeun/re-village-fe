@@ -76,31 +76,19 @@ export default function StepLayout({ children }: StepLayoutProps) {
     );
   };
 
-  // 헤더: 타이틀행(52px) + 진행바(4px) + 단계라벨(32px) = 88px
-  // 푸터: 버튼(54px) + 상하패딩(40px) = 94px
-  const HEADER_H = isComplete ? 0 : 88;
-  const FOOTER_H = isComplete ? 0 : 94;
-
   return (
     <AppLayout
       style={{
         overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
         background: '#ffffff',
         color: '#161616',
       }}
     >
       {/* 헤더 */}
       {!isComplete ? (
-        <header
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            background: '#ffffff',
-            zIndex: 10,
-          }}
-        >
+        <header style={{ flexShrink: 0, background: '#ffffff' }}>
           <div
             style={{
               display: 'flex',
@@ -159,11 +147,10 @@ export default function StepLayout({ children }: StepLayoutProps) {
         </header>
       ) : null}
 
-      {/* 스크롤 영역: 헤더/푸터 높이를 제외한 정확한 영역만 스크롤 */}
+      {/* 스크롤 영역 */}
       <main
         style={{
-          height: `calc(100dvh - ${HEADER_H}px - ${FOOTER_H}px)`,
-          marginTop: HEADER_H,
+          flex: 1,
           overflowY: 'auto',
           overscrollBehavior: 'contain',
           padding: '28px 20px 20px',
@@ -178,14 +165,10 @@ export default function StepLayout({ children }: StepLayoutProps) {
       {!isComplete ? (
         <footer
           style={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            width: '100%',
+            flexShrink: 0,
             padding: '12px 20px 28px',
             borderTop: '1px solid #ebeff5',
-            background: 'rgb(255 255 255 / 0.96)',
-            zIndex: 10,
+            background: '#ffffff',
           }}
         >
           {/* Step 1: 단일 버튼 */}
