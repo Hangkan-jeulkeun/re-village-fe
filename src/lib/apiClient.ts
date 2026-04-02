@@ -4,6 +4,8 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import type { paths } from '@/types/api';
 import type { TokenResponse } from '@/types/auth';
 
+export const API_BASE_URL = 'https://api.hangkan-jeulkeun.goorm.training';
+
 // Clones stored before the request body is consumed, used for retry after token refresh.
 const clonedRequests = new WeakMap<Request, Request>();
 
@@ -15,10 +17,10 @@ function refreshTokens(): Promise<TokenResponse | null> {
   if (!refreshToken) return Promise.resolve(null);
 
   if (!refreshPromise) {
-    refreshPromise = fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/refresh`,
-      { method: 'POST', headers: { Authorization: `Bearer ${refreshToken}` } },
-    )
+    refreshPromise = fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${refreshToken}` },
+    })
       .then((r) => (r.ok ? (r.json() as Promise<TokenResponse>) : null))
       .then((tokens) => {
         if (tokens) setTokens(tokens);
@@ -48,7 +50,7 @@ export async function apiFetch(
   const headers = new Headers(init?.headers);
   if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
 
-  const url = `${process.env.NEXT_PUBLIC_API_URL}${path}`;
+  const url = `${API_BASE_URL}${path}`;
   const response = await fetch(url, { ...init, headers });
 
   if (response.status !== 401) return response;
@@ -88,7 +90,7 @@ const authMiddleware: Middleware = {
 };
 
 export const apiClient = createClient<paths>({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL,
+  baseUrl: API_BASE_URL,
 });
 
 apiClient.use(authMiddleware);
