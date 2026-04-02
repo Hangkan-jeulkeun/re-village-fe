@@ -1,29 +1,6 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/api/v1/auth/login": {
-      "post": {
-        "operationId": "AuthController_login",
-        "summary": "로그인",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "로그인 성공 (JWT 토큰 반환)"
-          }
-        },
-        "tags": ["auth"]
-      }
-    },
     "/api/v1/auth/refresh": {
       "post": {
         "operationId": "AuthController_refresh",
@@ -97,7 +74,7 @@
                   },
                   "assetType": {
                     "type": "string",
-                    "example": "EMPTY_HOUSE"
+                    "example": "STONE_WALL_HOUSE"
                   },
                   "areaSqm": {
                     "type": "number",
@@ -121,7 +98,7 @@
                   },
                   "payload": {
                     "type": "string",
-                    "example": "{\"address\":\"제주특별자치도 서귀포시 천지동\",\"assetType\":\"EMPTY_HOUSE\"}",
+                    "example": "{\"address\":\"제주특별자치도 서귀포시 천지동\",\"assetType\":\"STONE_WALL_HOUSE\"}",
                     "description": "선택. multipart에서 JSON 문자열로 전달 가능. payload와 개별 필드가 겹치면 개별 필드 우선"
                   },
                   "photos": {
@@ -155,7 +132,7 @@
                   },
                   "assetType": {
                     "type": "string",
-                    "example": "EMPTY_HOUSE"
+                    "example": "STONE_WALL_HOUSE"
                   },
                   "areaSqm": {
                     "type": "number",
@@ -179,7 +156,7 @@
                   },
                   "payload": {
                     "type": "string",
-                    "example": "{\"address\":\"제주특별자치도 서귀포시 천지동\",\"assetType\":\"EMPTY_HOUSE\"}",
+                    "example": "{\"address\":\"제주특별자치도 서귀포시 천지동\",\"assetType\":\"STONE_WALL_HOUSE\"}",
                     "description": "선택. multipart에서 JSON 문자열로 전달 가능. payload와 개별 필드가 겹치면 개별 필드 우선"
                   },
                   "photos": {
@@ -395,29 +372,6 @@
         "tags": ["applications"]
       }
     },
-    "/api/v1/applications/lookup/verify": {
-      "post": {
-        "operationId": "ApplicationsController_verifyAndLookup",
-        "summary": "인증번호 검증 후 토큰 발급 + 신청내역 조회",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VerifyCodeDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": ["applications"]
-      }
-    },
     "/api/v1/applications/{id}/cancel": {
       "patch": {
         "operationId": "ApplicationsController_cancelMyApplication",
@@ -552,18 +506,8 @@
     "/api/v1/applications/admin/kanban": {
       "get": {
         "operationId": "ApplicationsController_adminKanban",
-        "summary": "관리자 칸반 보드 조회",
-        "parameters": [
-          {
-            "name": "search",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "example": "홍길동 또는 010-1234",
-              "type": "string"
-            }
-          }
-        ],
+        "summary": "관리자 칸반 보드 조회 (파라미터 없음)",
+        "parameters": [],
         "responses": {
           "200": {
             "description": ""
@@ -614,6 +558,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "신청서 ID (application.id) 또는 자산 ID (asset.id)",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -738,20 +683,6 @@
       }
     },
     "schemas": {
-      "LoginDto": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "example": "youth@example.com"
-          },
-          "password": {
-            "type": "string",
-            "example": "StrongPass123!"
-          }
-        },
-        "required": ["email", "password"]
-      },
       "AutofillHouseDto": {
         "type": "object",
         "properties": {
@@ -775,13 +706,9 @@
               "DEMOLITION_HOUSE",
               "NO_STONE_WALL_HOUSE",
               "D_SHAPED_HOUSE",
-              "URBAN_HOUSE_VILLA",
-              "EMPTY_HOUSE",
-              "WAREHOUSE",
-              "FIELD",
-              "OTHER"
+              "URBAN_HOUSE_VILLA"
             ],
-            "example": "EMPTY_HOUSE"
+            "example": "STONE_WALL_HOUSE"
           },
           "areaSqm": {
             "type": "number",

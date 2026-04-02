@@ -10,6 +10,9 @@ import type {
   RequestLookupCodeRequest,
   UpdateApplicationStatusRequest,
   VerifyLookupRequest,
+  AdminSummaryResponse,
+  AdminKanbanResponse,
+  AdminListResponse,
 } from './api';
 
 export const applicationKeys = {
@@ -86,35 +89,23 @@ export function useCancelApplication() {
 }
 
 export function useAdminSummary(month?: string) {
-  return useQuery({
+  return useQuery<AdminSummaryResponse>({
     queryKey: applicationKeys.adminSummary(month),
-    queryFn: async () => {
-      const { data, error } = await applicationsApi.adminSummary(month);
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => applicationsApi.adminSummary(month),
   });
 }
 
 export function useAdminList(params?: AdminListParams) {
-  return useQuery({
+  return useQuery<AdminListResponse>({
     queryKey: applicationKeys.adminList(params),
-    queryFn: async () => {
-      const { data, error } = await applicationsApi.adminList(params);
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => applicationsApi.adminList(params),
   });
 }
 
 export function useAdminKanban(search?: string) {
-  return useQuery({
+  return useQuery<AdminKanbanResponse>({
     queryKey: applicationKeys.adminKanban(search),
-    queryFn: async () => {
-      const { data, error } = await applicationsApi.adminKanban(search);
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => applicationsApi.adminKanban(),
   });
 }
 
@@ -138,7 +129,7 @@ export function useUpdateApplicationStatus() {
     }: UpdateApplicationStatusRequest & { id: string }) => {
       const { data, error } = await applicationsApi.updateStatus(id, body);
       if (error) throw error;
-      return data;
+      return data ?? null;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: applicationKeys.all });

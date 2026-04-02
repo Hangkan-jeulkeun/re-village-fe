@@ -4,6 +4,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # re-village-fe
 
+## 서비스 이름
+
+**한 집 줄클**
+
 ## 프로젝트 스택
 
 - Next.js 16 (App Router)

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Box, Button, HStack, Text, VStack } from '@vapor-ui/core';
 import AppLayout from '@/components/layout/AppLayout';
 import { LookupHistoryLogger } from '@/features/lookup/LookupHistoryLogger';
+import { AdminNotificationBanner } from '@/components/common/AdminNotificationBanner';
 
 type TabKey = 'in-progress' | 'done';
 type StepKey = '접수' | '검토 중' | '리모델링' | '임대 중' | '반환';
@@ -160,6 +161,7 @@ export default async function LookupHistoryPage({
         }}
       >
         <LookupHistoryLogger />
+        <AdminNotificationBanner />
 
         <Box
           style={{
