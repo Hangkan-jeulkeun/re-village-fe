@@ -6,14 +6,14 @@ export default function LookupHistoryPage() {
     <AppLayout
       style={{
         minHeight: "100%",
-        padding: "28px 20px 36px",
+        padding: "var(--page-padding-mobile)",
         background: "linear-gradient(180deg, #ffffff 0%, #f7f9fd 100%)",
       }}
     >
       <Text typography="heading2" style={{ fontWeight: 700 }}>
         신청 내역 조회
       </Text>
-      <div style={{ display: "grid", gap: "16px", marginTop: "24px", padding: "22px 18px", border: "1px solid #e0e7f0", borderRadius: "22px", background: "#ffffff" }}>
+      <div style={{ display: "grid", gap: "16px", marginTop: "24px", padding: "var(--size-space-275) var(--size-space-225)", border: "1px solid #e0e7f0", borderRadius: "22px", background: "#ffffff" }}>
         <div style={{ display: "grid", gap: "6px" }}>
           <span>신청자</span>
           <strong>홍길동</strong>

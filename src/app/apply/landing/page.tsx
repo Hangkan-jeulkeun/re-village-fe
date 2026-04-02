@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button, Text } from "@vapor-ui/core";
+import { Text } from "@vapor-ui/core";
 import AppLayout from "@/components/layout/AppLayout";
 
 export default function ApplyLandingPage() {
@@ -10,13 +10,13 @@ export default function ApplyLandingPage() {
         display: "flex",
         flexDirection: "column",
         gap: "28px",
-        padding: "28px 20px 36px",
+        padding: "var(--page-padding-mobile)",
         background:
           "radial-gradient(circle at top right, rgb(49 116 220 / 0.14), transparent 30%), linear-gradient(180deg, #ffffff 0%, #f7f9fd 100%)",
       }}
     >
-      <section style={{ paddingTop: "16px" }}>
-        <Text typography="body3" style={{ display: "inline-flex", padding: "8px 12px", borderRadius: "999px", background: "#edf4ff", color: "#2e6dcb", fontWeight: 700 }}>
+      <section style={{ paddingTop: "var(--size-space-200)" }}>
+        <Text typography="body3" style={{ display: "inline-flex", padding: "var(--container-padding-sm) var(--container-padding-md)", borderRadius: "999px", background: "#edf4ff", color: "#2e6dcb", fontWeight: 700 }}>
           빈집 활용 신청
         </Text>
         <Text typography="heading2" style={{ marginTop: "18px", fontWeight: 700, lineHeight: 1.16 }}>
@@ -28,7 +28,7 @@ export default function ApplyLandingPage() {
       </section>
 
       <section style={{ display: "grid", gap: "16px" }}>
-        <div style={{ padding: "24px 20px", border: "1px solid #e5ebf4", borderRadius: "24px", background: "rgb(255 255 255 / 0.92)", boxShadow: "0 16px 36px rgb(15 23 42 / 0.06)" }}>
+        <div style={{ padding: "var(--container-padding-xl) var(--size-space-250)", border: "1px solid #e5ebf4", borderRadius: "24px", background: "rgb(255 255 255 / 0.92)", boxShadow: "0 16px 36px rgb(15 23 42 / 0.06)" }}>
           <Text typography="heading4" style={{ fontWeight: 700 }}>
             신청하기
           </Text>
@@ -54,7 +54,7 @@ export default function ApplyLandingPage() {
           </Link>
         </div>
 
-        <div style={{ padding: "24px 20px", border: "1px solid #e5ebf4", borderRadius: "24px", background: "rgb(255 255 255 / 0.92)", boxShadow: "0 16px 36px rgb(15 23 42 / 0.06)" }}>
+        <div style={{ padding: "var(--container-padding-xl) var(--size-space-250)", border: "1px solid #e5ebf4", borderRadius: "24px", background: "rgb(255 255 255 / 0.92)", boxShadow: "0 16px 36px rgb(15 23 42 / 0.06)" }}>
           <Text typography="heading4" style={{ fontWeight: 700 }}>
             신청 내역 확인
           </Text>

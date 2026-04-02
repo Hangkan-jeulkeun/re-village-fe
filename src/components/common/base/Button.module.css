@@ -1,0 +1,43 @@
+.button {
+  width: 100%;
+  min-height: 56px;
+  border-radius: 20px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.primary {
+  background: #1f5fc4;
+  color: #ffffff;
+}
+
+.primary:hover,
+.primary:focus-visible,
+.primary:active {
+  background: #1b56b0;
+  color: #ffffff;
+}
+
+.secondary {
+  border: 1px solid #cfd8e3;
+  background: #ffffff;
+  color: #5d5d5d;
+}
+
+.secondary:hover,
+.secondary:focus-visible,
+.secondary:active {
+  background: #f8fafc;
+  color: #4a4a4a;
+}
+
+.buttonGroup {
+  display: flex;
+  width: 100%;
+  gap: 12px;
+}
+
+.buttonItem {
+  flex: 1;
+}

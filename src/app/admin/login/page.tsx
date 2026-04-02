@@ -32,7 +32,7 @@ export default function AdminLoginPage() {
       >
         <div
           style={{
-            padding: "56px",
+            padding: "var(--size-space-700)",
             background: "linear-gradient(180deg, #152033 0%, #1b3156 100%)",
             color: "#ffffff",
           }}
@@ -60,7 +60,7 @@ export default function AdminLoginPage() {
             flexDirection: "column",
             justifyContent: "center",
             gap: "24px",
-            padding: "56px",
+            padding: "var(--size-space-700)",
           }}
         >
           <div>

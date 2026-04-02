@@ -10,11 +10,11 @@ export default function LoginPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "24px 20px",
+        padding: "var(--page-padding-compact)",
         background: "linear-gradient(180deg, #f8fafc 0%, #eef3f8 100%)",
       }}
     >
-      <div style={{ width: "100%", padding: "28px 22px", border: "1px solid #e3e8ef", borderRadius: "24px", background: "#ffffff", boxShadow: "0 20px 36px rgb(15 23 42 / 0.06)" }}>
+      <div style={{ width: "100%", padding: "var(--size-space-350) var(--size-space-275)", border: "1px solid #e3e8ef", borderRadius: "24px", background: "#ffffff", boxShadow: "0 20px 36px rgb(15 23 42 / 0.06)" }}>
         <Text typography="body3" style={{ color: "#2a6eb8", fontWeight: 700 }}>
           User Login
         </Text>
