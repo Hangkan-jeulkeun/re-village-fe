@@ -10,7 +10,8 @@
     "prepare": "husky",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "gen:types": "node scripts/gen-types.mjs"
+    "gen:types": "node scripts/gen-types.mjs",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.96.1",
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@prettier/plugin-xml": "^3.4.2",
     "@types/node": "^20",
+    "@types/pdfkit": "^0.17.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
@@ -40,6 +42,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "openapi-typescript": "^7.13.0",
+    "pdfkit": "^0.18.0",
     "prettier": "^3.8.1",
     "typescript": "^5"
   }

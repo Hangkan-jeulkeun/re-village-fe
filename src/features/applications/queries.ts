@@ -7,6 +7,7 @@ import type {
   AdminListParams,
   CancelApplicationRequest,
   CreateApplicationRequest,
+  CreateApplicationMultipartRequest,
   LookupDetailRequest,
   RequestLookupCodeRequest,
   UpdateApplicationStatusRequest,
@@ -38,6 +39,17 @@ export function useCreateApplication() {
   });
 }
 
+export function useCreateApplicationMultipart() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateApplicationMultipartRequest) =>
+      applicationsApi.createMultipart(body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: applicationKeys.all });
+    },
+  });
+}
+
 export function useRequestLookupCode() {
   return useMutation({
     mutationFn: async (body: RequestLookupCodeRequest) => {
@@ -52,6 +64,16 @@ export function useRequestSubmitCode() {
   return useMutation({
     mutationFn: async (body: RequestLookupCodeRequest) => {
       const { data, error } = await applicationsApi.requestSubmitCode(body);
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useVerifySubmitCode() {
+  return useMutation({
+    mutationFn: async (body: VerifyLookupRequest) => {
+      const { data, error } = await applicationsApi.verifySubmitCode(body);
       if (error) throw error;
       return data;
     },

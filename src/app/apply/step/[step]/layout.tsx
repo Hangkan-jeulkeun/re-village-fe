@@ -2,13 +2,13 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { Text } from '@vapor-ui/core';
+import { Text, Toast } from '@vapor-ui/core';
 import AppLayout from '@/components/layout/AppLayout';
 import Button, { ButtonPair } from '@/components/common/base/Button';
 import {
-  useCreateApplication,
-  useRequestLookupCode,
-  useVerifyAndLookup,
+  useCreateApplicationMultipart,
+  useRequestSubmitCode,
+  useVerifySubmitCode,
 } from '@/features/applications/queries';
 import { useApplyStore } from '@/stores/useApplyStore';
 
@@ -38,16 +38,17 @@ export default function StepLayout({ children }: StepLayoutProps) {
     address,
     area,
     buildingType,
+    photos,
     verificationSent,
     verificationCode,
     setVerificationSent,
-    setCodeError,
     reset,
   } = useApplyStore();
 
-  const createApplication = useCreateApplication();
-  const requestLookupCode = useRequestLookupCode();
-  const verifyCode = useVerifyAndLookup();
+  const toastManager = Toast.useToastManager();
+  const createApplication = useCreateApplicationMultipart();
+  const requestSubmitCode = useRequestSubmitCode();
+  const verifySubmitCode = useVerifySubmitCode();
 
   /* 전화번호: 숫자 기준 10자리 이상 (010-0000-0000) */
   const isPhoneValid = phone.replace(/\D/g, '').length >= 10;
@@ -57,7 +58,7 @@ export default function StepLayout({ children }: StepLayoutProps) {
   const stepLabel = STEP_LABELS[step - 1] ?? '';
 
   const handleSendCode = () => {
-    requestLookupCode.mutate(
+    requestSubmitCode.mutate(
       { phone },
       {
         onSuccess: () => setVerificationSent(true),
@@ -67,11 +68,16 @@ export default function StepLayout({ children }: StepLayoutProps) {
   };
 
   const handleVerifyCode = () => {
-    verifyCode.mutate(
+    verifySubmitCode.mutate(
       { phone, code: verificationCode },
       {
         onSuccess: () => router.push('/apply/step/2'),
-        onError: () => setCodeError('인증번호가 일치하지 않습니다'),
+        onError: () =>
+          toastManager.add({
+            title: '인증 실패',
+            description: '인증번호가 일치하지 않습니다. 다시 확인해주세요.',
+            colorPalette: 'danger',
+          }),
       },
     );
   };
@@ -85,6 +91,7 @@ export default function StepLayout({ children }: StepLayoutProps) {
         address: address || undefined,
         areaSqm,
         notes: buildingType,
+        photos,
       },
       {
         onSuccess: () => {
@@ -215,8 +222,8 @@ export default function StepLayout({ children }: StepLayoutProps) {
             <Button
               disabled={
                 verificationSent
-                  ? !canNext || verifyCode.isPending
-                  : !canSendCode || requestLookupCode.isPending
+                  ? !canNext || verifySubmitCode.isPending
+                  : !canSendCode || requestSubmitCode.isPending
               }
               onClick={() => {
                 if (!verificationSent) {
@@ -226,9 +233,9 @@ export default function StepLayout({ children }: StepLayoutProps) {
                 }
               }}
             >
-              {requestLookupCode.isPending
+              {requestSubmitCode.isPending
                 ? '발송 중...'
-                : verifyCode.isPending
+                : verifySubmitCode.isPending
                   ? '확인 중...'
                   : verificationSent
                     ? '다음'

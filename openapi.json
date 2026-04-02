@@ -296,14 +296,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VerificationCodeResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": ["applications"]
@@ -326,14 +319,30 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VerificationCodeResponseDto"
-                }
+            "description": ""
+          }
+        },
+        "tags": ["applications"]
+      }
+    },
+    "/api/v1/applications/verification/verify": {
+      "post": {
+        "operationId": "ApplicationsController_verifySubmitCode",
+        "summary": "신청용 인증번호 검증",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyCodeDto"
               }
             }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
           }
         },
         "tags": ["applications"]
@@ -710,20 +719,6 @@
       }
     },
     "schemas": {
-      "VerificationCodeResponseDto": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string",
-            "example": "123456"
-          },
-          "expiresInSeconds": {
-            "type": "number",
-            "example": 180
-          }
-        },
-        "required": ["code", "expiresInSeconds"]
-      },
       "LoginDto": {
         "type": "object",
         "properties": {

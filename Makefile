@@ -1,4 +1,4 @@
-.PHONY: commit push pr release branch
+.PHONY: commit push pr release branch clean-branches
 
 # Create branch: make branch feat 12 [description words...]
 _BRANCH_ARGS       := $(filter-out branch,$(MAKECMDGOALS))
@@ -34,3 +34,8 @@ release:
 	@git push origin HEAD
 	@echo ""
 	@echo "✅ Pushed. PR will be auto-created by GitHub Actions."
+
+# Delete all local branches except main
+clean-branches:
+	@git branch | grep -v '^\* main$$' | grep -v '^  main$$' | xargs -r git branch -D
+	@echo "✅ All branches except main deleted."
