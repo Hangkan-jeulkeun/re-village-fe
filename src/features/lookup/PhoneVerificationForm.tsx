@@ -1,52 +1,29 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Text, TextInput } from '@vapor-ui/core';
 
 import {
   useRequestLookupCode,
-  useRequestSubmitCode,
   useVerifyAndLookup,
 } from '@/features/applications/queries';
 
 export function PhoneVerificationForm() {
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
-  const [sentCode, setSentCode] = useState<string | null>(null);
-  const [isExpired, setIsExpired] = useState(false);
-  const expiryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (expiryTimerRef.current !== null) clearTimeout(expiryTimerRef.current);
-    };
-  }, []);
+  const [codeSent, setCodeSent] = useState(false);
 
   const router = useRouter();
 
   const { mutate: requestCode, isPending: isRequestingCode } =
-    useRequestSubmitCode();
+    useRequestLookupCode();
 
   const { mutate: verifyAndLookup, isPending: isVerifying } =
     useVerifyAndLookup();
 
   function handleRequestCode() {
-    requestCode(
-      { phone },
-      {
-        onSuccess: (data) => {
-          setSentCode(data?.code ?? null);
-          setIsExpired(false);
-          if (expiryTimerRef.current !== null)
-            clearTimeout(expiryTimerRef.current);
-          expiryTimerRef.current = setTimeout(
-            () => setIsExpired(true),
-            (data?.expiresInSeconds ?? 0) * 1000,
-          );
-        },
-      },
-    );
+    requestCode({ phone }, { onSuccess: () => setCodeSent(true) });
   }
 
   function handleVerify() {
@@ -56,8 +33,7 @@ export function PhoneVerificationForm() {
     );
   }
 
-  const isCodeMatched = sentCode !== null && code === sentCode;
-  const canVerify = isCodeMatched && !isExpired && !isVerifying;
+  const canVerify = codeSent && code.trim().length > 0 && !isVerifying;
 
   return (
     <section

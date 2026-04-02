@@ -88,6 +88,7 @@ export default function ApplyStepPage() {
     () => photos.map((file) => URL.createObjectURL(file)),
     [photos],
   );
+  const [governmentLinked, setGovernmentLinked] = useState(false);
   const [attachedDocuments, setAttachedDocuments] = useState<string[]>([]);
 
   useEffect(() => {
