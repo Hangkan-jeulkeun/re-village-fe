@@ -9,7 +9,7 @@
 }
 
 .appContent {
-  width: min(100%, 440px);
+  width: min(100%, 375px);
   height: 100%;
   min-width: 0;
   overflow-y: auto;
