@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import Link from 'next/link';
-import { Button, Text } from '@vapor-ui/core';
+import Image from 'next/image';
+import { Box, Button, HStack, Text, VStack } from '@vapor-ui/core';
 import AppLayout from '@/components/layout/AppLayout';
 
 type TabKey = 'in-progress' | 'done';
@@ -103,9 +104,9 @@ const HISTORY_DATA: Record<TabKey, HistoryItem[]> = {
 const cardStyle: CSSProperties = {
   display: 'grid',
   gap: 'var(--size-space-250)',
-  padding: 'var(--size-space-300)',
-  borderRadius: '28px',
-  background: '#ffffff',
+  padding: 'var(--size-space-250)',
+  borderRadius: 'var(--size-space-225)',
+  background: 'var(--color-bg-canvas)',
   boxShadow: '0 10px 28px rgb(15 23 42 / 0.06)',
 };
 
@@ -124,41 +125,43 @@ export default async function LookupHistoryPage({
       style={{
         minHeight: '100%',
         padding: 0,
-        background: '#f4f6fa',
+        background: 'var(--color-bg-canvas-sub)',
       }}
     >
-      <div
+      <Box
         style={{
           minHeight: '100%',
-          background: '#f4f6fa',
+          display: 'flex',
+          flexDirection: 'column',
+          background: 'var(--color-bg-canvas-sub)',
         }}
       >
-        <header
+        <Box
           style={{
             position: 'sticky',
             top: 0,
             zIndex: 2,
-            background: 'rgb(255 255 255 / 0.96)',
-            backdropFilter: 'blur(16px)',
-            borderBottom: '1px solid #e8edf4',
+            background:
+              'color-mix(in srgb, var(--color-bg-overlay) 96%, transparent)',
+            backdropFilter: 'blur(var(--size-200))',
           }}
         >
-          <div
+          <Box
             style={{
-              padding:
-                'var(--size-space-200) var(--size-space-250) var(--size-space-300)',
+              padding: 'var(--size-space-200)',
               textAlign: 'center',
+              borderBottom: '1px solid var(--color-bg-primary-100)',
             }}
           >
             <Text
-              typography="heading3"
-              style={{ fontWeight: 800, color: '#111827' }}
+              typography="heading5"
+              style={{ color: 'var(--color-fg-normal)' }}
             >
               신청 내역 확인하기
             </Text>
-          </div>
+          </Box>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+          <Box style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
             {(Object.keys(TAB_LABELS) as TabKey[]).map((tab) => {
               const isActive = tab === activeTab;
               const href =
@@ -172,27 +175,35 @@ export default async function LookupHistoryPage({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    padding: 'var(--size-space-200) var(--size-space-150)',
+                    padding: 'var(--size-space-150) var(--size-space-150)',
                     border: 0,
                     borderBottom: isActive
-                      ? '3px solid #1f64d5'
-                      : '3px solid transparent',
+                      ? '2px solid var(--color-border-primary)'
+                      : '2px solid transparent',
                     background: 'transparent',
-                    color: isActive ? '#1f64d5' : '#6b7280',
-                    fontSize: '19px',
-                    fontWeight: 800,
                   }}
                 >
-                  {TAB_LABELS[tab]}
+                  <Text
+                    typography="heading5"
+                    style={{
+                      color: isActive
+                        ? 'var(--color-fg-primary)'
+                        : 'var(--color-fg-placeholder)',
+                    }}
+                  >
+                    {TAB_LABELS[tab]}
+                  </Text>
                 </Link>
               );
             })}
-          </div>
-        </header>
+          </Box>
+        </Box>
 
-        <main
+        <VStack
           style={{
             display: 'grid',
+            flex: 1,
+            alignContent: 'start',
             gap: 'var(--size-space-250)',
             padding:
               'var(--size-space-250) var(--size-space-250) var(--size-space-400)',
@@ -201,65 +212,75 @@ export default async function LookupHistoryPage({
           {items.map((item) => (
             <HistoryCard key={item.id} item={item} />
           ))}
-        </main>
+        </VStack>
 
-        <footer
+        <Box
           style={{
             position: 'sticky',
             bottom: 0,
+            marginTop: 'auto',
             padding:
               'var(--size-space-200) var(--size-space-250) var(--size-space-250)',
-            borderTop: '1px solid #dde3ec',
-            background: 'rgb(255 255 255 / 0.97)',
-            backdropFilter: 'blur(18px)',
+            borderTop: '1px solid var(--color-border-normal)',
+            paddingBottom: 'var(--size-space-400)',
+            background:
+              'color-mix(in srgb, var(--color-bg-overlay) 97%, transparent)',
+            backdropFilter: 'blur(var(--size-225))',
             zIndex: 9999,
           }}
         >
           <Link href="/apply/landing" style={{ display: 'block' }}>
             <Button
               size="lg"
-              color="primary"
               style={{
                 width: '100%',
-                height: '72px',
-                borderRadius: '22px',
-                fontSize: '18px',
-                fontWeight: 800,
+                height: 'calc(var(--size-600) + var(--size-300))',
+                borderRadius: 'var(--size-space-250)',
               }}
             >
-              새로 신청하기
+              <Text
+                typography="heading3"
+                style={{ color: 'var(--color-white)' }}
+              >
+                새로 신청하기
+              </Text>
             </Button>
           </Link>
-        </footer>
-      </div>
+        </Box>
+      </Box>
     </AppLayout>
   );
 }
 
+// HistoryCard 신청 내역 카드
 function HistoryCard({ item }: { item: HistoryItem }) {
   if (item.completionStatus) {
     return <CompletedHistoryCard item={item} />;
   }
 
   return (
-    <article style={cardStyle}>
-      <div
+    <VStack style={cardStyle}>
+      <HStack
         style={{
           display: 'grid',
-          gridTemplateColumns: '88px minmax(0, 1fr)',
+          gridTemplateColumns:
+            'calc(var(--size-800) + var(--size-300)) minmax(0, 1fr)',
           gap: 'var(--size-space-200)',
           alignItems: 'start',
         }}
       >
-        <HouseThumbnail />
+        <HouseThumbnail housingType={item.housingType} />
 
-        <div style={{ display: 'grid', gap: 'var(--size-space-100)' }}>
+        <VStack
+          style={{
+            height: 'calc(var(--size-800) + var(--size-300))',
+            justifyContent: 'space-between',
+            minWidth: 0,
+          }}
+        >
           <Text
             typography="heading3"
             style={{
-              fontWeight: 800,
-              color: '#111827',
-              lineHeight: 1.22,
               wordBreak: 'keep-all',
             }}
           >
@@ -267,37 +288,45 @@ function HistoryCard({ item }: { item: HistoryItem }) {
           </Text>
           <Text
             typography="body1"
-            style={{ color: '#4b5563', fontWeight: 700, lineHeight: 1.4 }}
+            style={{
+              color: 'var(--color-fg-subtle)',
+              fontWeight: 700,
+              lineHeight: 1.4,
+            }}
           >
             {item.housingType}
           </Text>
-        </div>
-      </div>
+        </VStack>
+      </HStack>
 
       <StepLine labels={STEP_LABELS} activeIndex={item.currentStep} />
 
       {item.lease ? <LeaseStatusCard lease={item.lease} /> : null}
 
-      <div
+      <Box
         style={{
           display: 'grid',
           gridTemplateColumns: item.secondaryActionLabel ? '1fr 1fr' : '1fr',
           gap: 'var(--size-space-150)',
         }}
       >
-        <ActionButton tone="outline">{item.primaryActionLabel}</ActionButton>
+        <ActionButton tone="outline" height="var(--size-500)">
+          {item.primaryActionLabel}
+        </ActionButton>
         {item.secondaryActionLabel ? (
           <ActionButton
             tone={item.secondaryActionTone === 'danger' ? 'danger' : 'outline'}
+            height="var(--size-500)"
           >
             {item.secondaryActionLabel}
           </ActionButton>
         ) : null}
-      </div>
-    </article>
+      </Box>
+    </VStack>
   );
 }
 
+// CompletedHistoryCard 완료된 신청 내역 카드
 function CompletedHistoryCard({ item }: { item: HistoryItem }) {
   if (!item.completionStatus || !item.appliedDate) {
     return null;
@@ -305,87 +334,87 @@ function CompletedHistoryCard({ item }: { item: HistoryItem }) {
 
   const badgeStyle: Record<'rejected' | 'completed', CSSProperties> = {
     rejected: {
-      background: '#ffe4e4',
-      color: '#c81e1e',
+      background: 'var(--badge-반려-bg)',
+      color: 'var(--badge-반려-text)',
     },
     completed: {
-      background: '#e9f2ff',
-      color: '#1f64d5',
+      background: 'var(--badge-완료-bg)',
+      color: 'var(--badge-완료-text)',
     },
   };
 
   return (
-    <article
+    <VStack
       style={{
         ...cardStyle,
         gap: 'var(--size-space-225)',
       }}
     >
-      <div
+      <HStack
         style={{
           display: 'grid',
-          gridTemplateColumns: '88px minmax(0, 1fr)',
-          gap: 'var(--size-space-150)',
+          gridTemplateColumns:
+            'calc(var(--size-800) + var(--size-300)) minmax(0, 1fr) auto',
+          gap: 'var(--size-space-200)',
+          alignItems: 'start',
         }}
       >
-        <HouseThumbnail />
+        <HouseThumbnail housingType={item.housingType} />
 
-        <div
+        <VStack
           style={{
-            display: 'flex',
-            alignItems: 'flex-start',
             justifyContent: 'space-between',
-            gap: 'var(--size-space-150)',
+            height: 'calc(var(--size-800) + var(--size-300))',
+            minWidth: 0,
           }}
         >
           <Text
-            typography="heading2"
+            typography="heading3"
             style={{
-              fontWeight: 800,
-              color: '#111827',
-              lineHeight: 1.22,
+              color: 'var(--color-fg-normal)',
               wordBreak: 'keep-all',
             }}
           >
             {item.title}
           </Text>
-
-          <span
+          <Text
+            typography="body1"
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minWidth: '88px',
-              padding: 'var(--size-space-150) var(--size-space-175)',
-              borderRadius: '999px',
-              fontSize: '17px',
-              fontWeight: 800,
+              color: 'var(--color-fg-subtle)',
               whiteSpace: 'nowrap',
-              ...badgeStyle[item.completionStatus.tone],
+              fontWeight: 500,
             }}
           >
+            신청일 {item.appliedDate} · {item.housingType}
+          </Text>
+        </VStack>
+
+        <Box
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 'var(--size-space-050) var(--size-space-150)',
+            borderRadius: '999px',
+            fontWeight: 800,
+            whiteSpace: 'nowrap',
+            ...badgeStyle[item.completionStatus.tone],
+          }}
+        >
+          <Text typography="code1" style={{ fontWeight: 800 }}>
             {item.completionStatus.label}
-          </span>
-        </div>
-      </div>
+          </Text>
+        </Box>
+      </HStack>
 
-      <Text
-        typography="heading3"
-        style={{
-          color: '#5b6678',
-          fontWeight: 700,
-          lineHeight: 1.35,
-          wordBreak: 'keep-all',
-        }}
-      >
-        신청일 {item.appliedDate} · {item.housingType}
-      </Text>
-
-      <ActionButton tone="outline">{item.primaryActionLabel}</ActionButton>
-    </article>
+      <ActionButton tone="outline" height="var(--size-500)">
+        {item.primaryActionLabel}
+      </ActionButton>
+    </VStack>
   );
 }
 
+// StepLine 신청 단계(progress) 프로그래스바
 function StepLine({
   labels,
   activeIndex,
@@ -394,8 +423,8 @@ function StepLine({
   activeIndex: number;
 }) {
   return (
-    <div style={{ display: 'grid', gap: 'var(--size-space-150)' }}>
-      <div
+    <VStack style={{ display: 'grid', gap: 'var(--size-space-150)' }}>
+      <Box
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
@@ -408,7 +437,7 @@ function StepLine({
           const isLast = index === labels.length - 1;
 
           return (
-            <div
+            <Box
               key={label}
               style={{
                 position: 'relative',
@@ -418,39 +447,57 @@ function StepLine({
               }}
             >
               {!isLast ? (
-                <span
+                <Box
                   style={{
                     position: 'absolute',
                     top: '50%',
                     left: 'calc(50% + 13px)',
                     width: 'calc(100% - 26px)',
-                    height: '4px',
+                    height: '1px',
                     transform: 'translateY(-50%)',
                     borderRadius: '999px',
-                    background: isComplete ? '#6d9be9' : '#dbe7fb',
+                    background: isComplete
+                      ? 'var(--color-fg-primary)'
+                      : 'var(--color-bg-primary-100)',
+                    opacity: isComplete ? 0.65 : 1,
                   }}
                 />
               ) : null}
 
-              <span
+              <Box
                 style={{
                   position: 'relative',
                   zIndex: 1,
-                  display: 'block',
-                  width: isActive ? '28px' : '20px',
-                  height: isActive ? '28px' : '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: isActive ? 'var(--size-space-300)' : 'var(--size-250)',
+                  height: isActive
+                    ? 'var(--size-space-300)'
+                    : 'var(--size-250)',
                   borderRadius: '999px',
-                  border: isActive ? '4px solid #c9dcff' : 'none',
-                  background: isActive || isComplete ? '#1f64d5' : '#c6dafb',
-                  boxShadow: isActive ? '0 0 0 4px #ffffff' : 'none',
+                  border: isActive
+                    ? 'var(--size-025) solid color-mix(in srgb, var(--color-fg-primary) 25%, transparent)'
+                    : 'none',
+                  opacity: isActive ? 1 : isComplete ? 0.6 : 0.3,
+                  background: 'transparent',
                 }}
-              />
-            </div>
+              >
+                <Box
+                  style={{
+                    width: 'var(--size-150)',
+                    height: 'var(--size-150)',
+                    borderRadius: '999px',
+                    background: 'var(--color-fg-primary)',
+                  }}
+                />
+              </Box>
+            </Box>
           );
         })}
-      </div>
+      </Box>
 
-      <div
+      <Box
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
@@ -466,18 +513,19 @@ function StepLine({
               key={label}
               typography="body3"
               style={{
-                color: isActive || isDone ? '#1f64d5' : '#b8ccf2',
-                fontWeight: isActive ? 800 : 700,
+                color: 'var(--color-fg-primary)',
+                fontWeight: isActive ? 700 : 500,
                 textAlign: 'center',
                 wordBreak: 'keep-all',
+                opacity: isActive ? 1 : isDone ? 0.6 : 0.3,
               }}
             >
               {label}
             </Text>
           );
         })}
-      </div>
-    </div>
+      </Box>
+    </VStack>
   );
 }
 
@@ -489,16 +537,16 @@ function LeaseStatusCard({ lease }: { lease: HistoryItem['lease'] }) {
   const [remainingYears, returnDate] = lease.endLabel.split('\n');
 
   return (
-    <section
+    <VStack
       style={{
         display: 'grid',
         gap: 'var(--size-space-150)',
         padding: 'var(--size-space-200)',
-        borderRadius: '20px',
-        background: '#f1f4f9',
+        borderRadius: 'var(--size-space-250)',
+        background: 'var(--color-bg-canvas-sub)',
       }}
     >
-      <div
+      <HStack
         style={{
           display: 'flex',
           alignItems: 'flex-start',
@@ -506,22 +554,22 @@ function LeaseStatusCard({ lease }: { lease: HistoryItem['lease'] }) {
           gap: 'var(--size-space-150)',
         }}
       >
-        <div style={{ display: 'grid', gap: 'var(--size-space-100)' }}>
+        <VStack style={{ display: 'grid', gap: 'var(--size-space-100)' }}>
           <Text
             typography="body1"
-            style={{ color: '#1f64d5', fontWeight: 800 }}
+            style={{ color: 'var(--color-fg-primary)', fontWeight: 800 }}
           >
             {lease.title}
           </Text>
           <Text
             typography="body2"
-            style={{ color: '#6b7280', fontWeight: 700 }}
+            style={{ color: 'var(--color-fg-placeholder)', fontWeight: 700 }}
           >
             {lease.startLabel}
           </Text>
-        </div>
+        </VStack>
 
-        <div
+        <VStack
           style={{
             display: 'grid',
             gap: 'var(--size-space-100)',
@@ -530,58 +578,59 @@ function LeaseStatusCard({ lease }: { lease: HistoryItem['lease'] }) {
         >
           <Text
             typography="body1"
-            style={{ color: '#1f64d5', fontWeight: 800 }}
+            style={{ color: 'var(--color-fg-primary)', fontWeight: 800 }}
           >
             {remainingYears}
           </Text>
           <Text
             typography="body2"
-            style={{ color: '#6b7280', fontWeight: 700 }}
+            style={{ color: 'var(--color-fg-placeholder)', fontWeight: 700 }}
           >
             {returnDate}
           </Text>
-        </div>
-      </div>
+        </VStack>
+      </HStack>
 
-      <div
+      <Box
         style={{
           overflow: 'hidden',
-          height: '14px',
+          height: 'var(--size-175)',
           borderRadius: '999px',
-          background: '#cfd7e5',
+          background: 'var(--color-border-normal)',
         }}
       >
-        <span
+        <Box
           style={{
             display: 'block',
             width: `${lease.progress * 100}%`,
             height: '100%',
             borderRadius: '999px',
-            background: '#1f64d5',
+            background: 'var(--color-fg-primary)',
           }}
         />
-      </div>
-    </section>
+      </Box>
+    </VStack>
   );
 }
 
 function ActionButton({
   children,
   tone,
+  height = 'var(--size-500)',
 }: {
   children: ReactNode;
   tone: 'outline' | 'danger';
+  height?: string;
 }) {
   const style: Record<'outline' | 'danger', CSSProperties> = {
     outline: {
-      border: '1px solid #d5dbe5',
-      background: '#ffffff',
-      color: '#1f2937',
+      border: '1px solid var(--color-border-normal)',
+      background: 'var(--color-bg-canvas)',
+      color: 'var(--color-fg-normal)',
     },
     danger: {
-      border: '1px solid #ffd2d2',
-      background: '#ffd8d8',
-      color: '#c53030',
+      background: 'var(--color-error-bg)',
+      color: 'var(--color-error)',
     },
   };
 
@@ -590,100 +639,61 @@ function ActionButton({
       size="lg"
       style={{
         width: '100%',
-        height: '60px',
-        borderRadius: '18px',
-        fontSize: '17px',
-        fontWeight: 800,
+        height,
+        borderRadius: 'var(--size-space-100)',
         ...style[tone],
       }}
     >
-      {children}
+      <Text
+        typography="heading6"
+        style={{
+          fontWeight: 600,
+          color:
+            tone === 'danger' ? 'var(--color-error)' : 'var(--color-fg-normal)',
+        }}
+      >
+        {children}
+      </Text>
     </Button>
   );
 }
 
-function HouseThumbnail() {
+function HouseThumbnail({ housingType }: { housingType: string }) {
+  const imageSrc =
+    housingType === '빌라'
+      ? '/images/home-type2-dam.png'
+      : '/images/home-type1-damBat.png';
+
   return (
-    <div
+    <Box
       aria-hidden
       style={{
         position: 'relative',
-        width: '88px',
-        height: '88px',
-        borderRadius: '20px',
-        background: 'linear-gradient(180deg, #edf7ff 0%, #f7fbff 100%)',
+        width: 'calc(var(--size-800) + var(--size-300))',
+        height: 'calc(var(--size-800) + var(--size-300))',
+        borderRadius: 'var(--size-space-250)',
+        background:
+          'linear-gradient(180deg, var(--color-bg-primary-100) 0%, var(--color-bg-canvas) 100%)',
         overflow: 'hidden',
       }}
     >
-      <span
+      <Image
+        src={imageSrc}
+        alt=""
+        fill
+        sizes="calc(var(--size-800) + var(--size-300))"
         style={{
-          position: 'absolute',
-          left: '18px',
-          bottom: '24px',
-          width: '52px',
-          height: '30px',
-          borderRadius: '4px',
-          background: '#f2dfc7',
-          boxShadow: 'inset 0 -10px 0 #ead0b6',
+          objectFit: 'cover',
         }}
       />
-      <span
+      <Box
         style={{
           position: 'absolute',
-          left: '16px',
-          bottom: '48px',
-          width: 0,
-          height: 0,
-          borderLeft: '28px solid transparent',
-          borderRight: '28px solid transparent',
-          borderBottom: '20px solid #73b377',
+          inset: 0,
+          borderRadius: 'var(--size-space-250)',
+          boxShadow: 'inset 0 0 0 1px rgb(255 255 255 / 0.55)',
         }}
       />
-      <span
-        style={{
-          position: 'absolute',
-          left: '32px',
-          bottom: '29px',
-          width: '8px',
-          height: '18px',
-          borderRadius: '2px',
-          background: '#4b5563',
-        }}
-      />
-      <span
-        style={{
-          position: 'absolute',
-          left: '43px',
-          bottom: '29px',
-          width: '12px',
-          height: '18px',
-          borderRadius: '2px',
-          background: '#4b5563',
-        }}
-      />
-      <span
-        style={{
-          position: 'absolute',
-          left: '0',
-          bottom: '0',
-          width: '34px',
-          height: '30px',
-          background:
-            'radial-gradient(circle at 6px 5px, #59483c 0 4px, transparent 4.2px) 0 0 / 12px 10px, #4f4035',
-        }}
-      />
-      <span
-        style={{
-          position: 'absolute',
-          right: '10px',
-          bottom: '10px',
-          width: '36px',
-          height: '8px',
-          borderRadius: '999px',
-          background:
-            'radial-gradient(circle at 4px 4px, #df7d2b 0 3px, transparent 3.2px) 0 0 / 10px 8px',
-        }}
-      />
-    </div>
+    </Box>
   );
 }
