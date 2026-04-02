@@ -6,11 +6,19 @@ import AppLayout from '@/components/layout/AppLayout';
 
 type TabKey = 'in-progress' | 'done';
 type StepKey = '접수' | '검토 중' | '리모델링' | '임대 중' | '반환';
+type HomeTypeKey =
+  | '돌담이 있는 주택'
+  | '철거주택(주차장으로이용)'
+  | 'ㄷ자형주택'
+  | '돌담+작은밭이 있는 주택'
+  | '돌담이 없는 주택'
+  | '도심형주택';
 
 interface HistoryItem {
   id: string;
   title: string;
   housingType: string;
+  homeType: HomeTypeKey;
   appliedDate?: string;
   currentStep: number;
   primaryActionLabel: string;
@@ -47,6 +55,7 @@ const HISTORY_DATA: Record<TabKey, HistoryItem[]> = {
       id: 'gangjeong',
       title: '서귀포시 강정동 230',
       housingType: '단독주택',
+      homeType: '돌담+작은밭이 있는 주택',
       currentStep: 0,
       primaryActionLabel: '신청서 확인',
       secondaryActionLabel: '신청 취소',
@@ -56,6 +65,7 @@ const HISTORY_DATA: Record<TabKey, HistoryItem[]> = {
       id: 'donghong',
       title: '서귀포시 동홍동',
       housingType: '빌라',
+      homeType: '돌담이 있는 주택',
       currentStep: 2,
       primaryActionLabel: '신청서 확인',
     },
@@ -63,6 +73,7 @@ const HISTORY_DATA: Record<TabKey, HistoryItem[]> = {
       id: 'jungang',
       title: '서귀포시 중앙로 44',
       housingType: '단독주택',
+      homeType: '도심형주택',
       currentStep: 3,
       primaryActionLabel: '신청서 확인',
       lease: {
@@ -78,6 +89,7 @@ const HISTORY_DATA: Record<TabKey, HistoryItem[]> = {
       id: 'ara',
       title: '제주시 아라동',
       housingType: '농가주택',
+      homeType: '철거주택(주차장으로이용)',
       appliedDate: '2026.01.26',
       currentStep: 4,
       primaryActionLabel: '신청서 확인',
@@ -90,6 +102,7 @@ const HISTORY_DATA: Record<TabKey, HistoryItem[]> = {
       id: 'cheonji',
       title: '서귀포시 천지동 13',
       housingType: '농가주택',
+      homeType: 'ㄷ자형주택',
       appliedDate: '2020.04.05',
       currentStep: 4,
       primaryActionLabel: '활용 확인',
@@ -108,6 +121,15 @@ const cardStyle: CSSProperties = {
   borderRadius: 'var(--size-space-225)',
   background: 'var(--color-bg-canvas)',
   boxShadow: '0 10px 28px rgb(15 23 42 / 0.06)',
+};
+
+const HOME_TYPE_IMAGE_MAP: Record<HomeTypeKey, string> = {
+  '돌담이 있는 주택': '/images/home-type2-dam.png',
+  '철거주택(주차장으로이용)': '/images/home-type3-parking.png',
+  ㄷ자형주택: '/images/home-type4-tree.png',
+  '돌담+작은밭이 있는 주택': '/images/home-type1-damBat.png',
+  '돌담이 없는 주택': '/images/home-type5-nodam.png',
+  도심형주택: '/images/home-type6-nomalcity.png',
 };
 
 export default async function LookupHistoryPage({
@@ -229,22 +251,24 @@ export default async function LookupHistoryPage({
             zIndex: 9999,
           }}
         >
-          <Link href="/apply/landing" style={{ display: 'block' }}>
-            <Button
-              size="lg"
-              style={{
-                width: '100%',
-                height: 'calc(var(--size-600) + var(--size-300))',
-                borderRadius: 'var(--size-space-250)',
-              }}
+          <Link
+            href="/apply/landing"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '100%',
+              height: 'calc(var(--size-600) + var(--size-300))',
+              borderRadius: 'var(--size-space-250)',
+              background: 'var(--color-brand-interactive)',
+            }}
+          >
+            <Text
+              typography="heading3"
+              style={{ color: 'var(--color-fg-inverse)' }}
             >
-              <Text
-                typography="heading3"
-                style={{ color: 'var(--color-white)' }}
-              >
-                새로 신청하기
-              </Text>
-            </Button>
+              새로 신청하기
+            </Text>
           </Link>
         </Box>
       </Box>
@@ -269,7 +293,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
           alignItems: 'start',
         }}
       >
-        <HouseThumbnail housingType={item.housingType} />
+        <HouseThumbnail homeType={item.homeType} />
 
         <VStack
           style={{
@@ -359,7 +383,7 @@ function CompletedHistoryCard({ item }: { item: HistoryItem }) {
           alignItems: 'start',
         }}
       >
-        <HouseThumbnail housingType={item.housingType} />
+        <HouseThumbnail homeType={item.homeType} />
 
         <VStack
           style={{
@@ -658,11 +682,8 @@ function ActionButton({
   );
 }
 
-function HouseThumbnail({ housingType }: { housingType: string }) {
-  const imageSrc =
-    housingType === '빌라'
-      ? '/images/home-type2-dam.png'
-      : '/images/home-type1-damBat.png';
+function HouseThumbnail({ homeType }: { homeType: HomeTypeKey }) {
+  const imageSrc = HOME_TYPE_IMAGE_MAP[homeType];
 
   return (
     <Box
