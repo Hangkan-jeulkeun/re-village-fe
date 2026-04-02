@@ -47,12 +47,7 @@ jobs:
             BODY="- $TITLE"
           fi
 
-          FULL_BODY="## 변경 사항
-$BODY
-
-## 체크리스트
-- [ ] 코드 리뷰 완료
-- [ ] 테스트 통과"
+          FULL_BODY=$(printf '## 변경 사항\n%s\n\n## 체크리스트\n- [ ] 코드 리뷰 완료\n- [ ] 테스트 통과' "$BODY")
 
           gh pr create \
             --title "$TITLE" \
