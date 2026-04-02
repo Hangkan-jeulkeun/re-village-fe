@@ -57,7 +57,6 @@ $BODY
           gh pr create \
             --title "$TITLE" \
             --body "$FULL_BODY" \
-            --base main \
-            --draft
+            --base main
 
-          echo "✅ Draft PR created: $TITLE"
+          echo "✅ PR created: $TITLE"
