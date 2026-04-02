@@ -19,7 +19,8 @@ jobs:
 
       - name: Create PR if not exists
         env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           BRANCH="${{ github.ref_name }}"
 
@@ -30,20 +31,40 @@ jobs:
             exit 0
           fi
 
-          # Generate title from branch name
-          # feat/#12-login-page → feat: login page
-          TYPE=$(echo "$BRANCH" | grep -oE '^(feat|fix|docs|style|refactor|test|chore)' || echo "")
+          # Parse branch info
           ISSUE_NUM=$(echo "$BRANCH" | grep -oE '#[0-9]+' | grep -oE '[0-9]+' || echo "")
-          DESCRIPTION=$(echo "$BRANCH" | sed 's|^[^/]*/||' | sed 's|#[0-9]*-\?||' | tr '-' ' ' | xargs)
-
-          if [ -n "$TYPE" ]; then
-            TITLE="$TYPE: $DESCRIPTION"
-          else
-            TITLE="$DESCRIPTION"
-          fi
 
           # Generate body from commit messages since main
+          COMMITS=$(git log origin/main..HEAD --pretty=format:"%s" 2>/dev/null)
           BODY=$(git log origin/main..HEAD --pretty=format:"- %s" 2>/dev/null)
+
+          # Generate title using Claude API from all commit messages
+          if [ -n "$COMMITS" ] && [ -n "$ANTHROPIC_API_KEY" ]; then
+            PROMPT="다음은 하나의 PR에 포함된 커밋 메시지 목록이야. 이 내용을 종합해서 PR 제목을 한 줄로 만들어줘.\n형식: <type>: <한국어 설명> (예: feat: 로그인 페이지 구현)\n타입: feat, fix, docs, style, refactor, test, chore\n규칙: PR 제목만 출력하고 다른 내용은 절대 포함하지 말 것\n\n커밋 메시지:\n$COMMITS"
+
+            RESPONSE=$(curl -sf https://api.anthropic.com/v1/messages \
+              -H "x-api-key: $ANTHROPIC_API_KEY" \
+              -H "anthropic-version: 2023-06-01" \
+              -H "content-type: application/json" \
+              -d "{\"model\":\"claude-haiku-4-5-20251001\",\"max_tokens\":100,\"messages\":[{\"role\":\"user\",\"content\":$(echo "$PROMPT" | jq -Rs .)}]}" \
+              2>/dev/null || echo "")
+
+            TITLE=$(echo "$RESPONSE" | jq -r '.content[0].text // empty' 2>/dev/null | tr -d '\n' | xargs)
+          fi
+
+          # Fallback: generate title from branch name
+          if [ -z "$TITLE" ]; then
+            TYPE=$(echo "$BRANCH" | grep -oE '^(feat|fix|docs|style|refactor|test|chore)' || echo "")
+            DESCRIPTION=$(echo "$BRANCH" | sed 's|^[^/]*/||' | sed 's|#[0-9]*-\?||' | tr '-' ' ' | xargs)
+            if [ -n "$TYPE" ] && [ -n "$DESCRIPTION" ]; then
+              TITLE="$TYPE: $DESCRIPTION"
+            elif [ -n "$COMMITS" ]; then
+              TITLE=$(echo "$COMMITS" | tail -1)
+            else
+              TITLE="$BRANCH"
+            fi
+          fi
+
           if [ -z "$BODY" ]; then
             BODY="- $TITLE"
           fi
