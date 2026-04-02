@@ -50,6 +50,15 @@ const STATUS_STEP: Record<AppStatus, number> = {
   REJECTED: 4,
 };
 
+const STATUS_LABEL: Record<AppStatus, string> = {
+  RECEIVED: '신청 완료',
+  REVIEWING: '관리자 검토 중',
+  REMODELING: '리모델링 중',
+  LEASING: '임대 진행 중',
+  COMPLETED: '완료',
+  REJECTED: '반려',
+};
+
 const DONE_STATUSES = new Set<AppStatus>(['COMPLETED', 'REJECTED']);
 
 function formatLookupAddress(value?: string): string {
@@ -294,14 +303,6 @@ function InProgressCard({
               >
                 {label}
               </Text>
-              {/* {item.areaSqm != null ? (
-                <Text
-                  typography="body2"
-                  style={{ color: 'var(--color-fg-placeholder)' }}
-                >
-                  {item.areaSqm}㎡
-                </Text>
-              ) : null} */}
             </VStack>
           </VStack>
         </HStack>
@@ -317,6 +318,13 @@ function InProgressCard({
             {item.lease}
           </Text>
         ) : null}
+
+        <Text
+          typography="body2"
+          style={{ color: 'var(--color-fg-subtle)', fontWeight: 600 }}
+        >
+          {STATUS_LABEL[item.status]}
+        </Text>
 
         <ApplicationStepLine activeIndex={step} />
 
@@ -370,7 +378,7 @@ function CompletedCard({
       ? { background: 'var(--badge-반려-bg)', color: 'var(--badge-반려-text)' }
       : { background: 'var(--badge-완료-bg)', color: 'var(--badge-완료-text)' };
 
-  const badgeLabel = item.status === 'REJECTED' ? '반려' : '완료';
+  const badgeLabel = STATUS_LABEL[item.status];
 
   return (
     <VStack

@@ -6,7 +6,7 @@ import { Box, HStack, Text, VStack } from '@vapor-ui/core';
 import { PageLoader } from '@/components/common/PageLoader';
 
 import { ApplicationStepLine } from './ApplicationStepLine';
-import { useMyApplicationAnalysis, useMyApplicationDetail } from './queries';
+import { useMyApplicationDetail } from './queries';
 import {
   DEFAULT_ASSET_IMAGE,
   LOOKUP_ASSET_IMAGE,
@@ -31,6 +31,14 @@ interface DetailApplication {
   assetType: LookupAssetType;
   thumbnailUrl?: string | null;
   appliedAt?: string;
+  aiDescription?: string;
+}
+
+interface AiAnalysis {
+  recommendations: string[];
+  explanation: string;
+  strength: string;
+  basis: string;
 }
 
 const STATUS_STEP: Record<AppStatus, number> = {
@@ -42,32 +50,17 @@ const STATUS_STEP: Record<AppStatus, number> = {
   REJECTED: 4,
 };
 
-const LEASE_TAGS = [
+const TAG_PALETTE = [
   {
-    label: '공방',
-    textColor: '#ea6f2d',
-    borderColor: '#ea6f2d',
-    background: '#fff7f2',
+    bg: 'var(--color-bg-primary-100)',
+    color: 'var(--color-fg-primary)',
+    border: 'var(--color-border-primary)',
   },
-  {
-    label: '카페',
-    textColor: '#2f7fd1',
-    borderColor: '#2f7fd1',
-    background: '#f1f7ff',
-  },
-  {
-    label: '식당',
-    textColor: '#35a86e',
-    borderColor: '#35a86e',
-    background: '#effbf4',
-  },
+  { bg: '#fff7f2', color: '#ea6f2d', border: '#ea6f2d' },
+  { bg: '#f1f7ff', color: '#2f7fd1', border: '#2f7fd1' },
+  { bg: '#effbf4', color: '#35a86e', border: '#35a86e' },
+  { bg: '#fdf4ff', color: '#9b5de5', border: '#9b5de5' },
 ] as const;
-
-const ANALYSIS_COPY = `돌담형+10평형 주택은 제주 고유의 주거 이미지와 소규모 상업 운영이 결합되기 좋은 유형입니다. 외부 진입 동선이 단순하고, 전면 노출이 쉬워 공방이나 소형 카페처럼 체류형 업종과의 궁합이 좋습니다.
-
-내부 면적이 크지 않기 때문에 좌석 수를 많이 확보하는 업종보다는 목적 방문형 프로그램을 권장합니다. 창과 출입부의 개방감을 살리면 방문 경험을 개선할 수 있고, 마당이나 전면 여유 공간은 계절형 체험 요소로 확장할 수 있습니다.
-
-리모델링 단계에서는 외벽 질감과 지붕 형태를 유지하면서 설비와 단열을 우선 보강하는 구성이 적합합니다. 이후 임대 단계에서는 지역성, 사진 촬영 포인트, 체험 동선을 함께 안내하는 방식이 효과적입니다.`;
 
 function isLookupAssetType(value: unknown): value is LookupAssetType {
   return typeof value === 'string' && value in LOOKUP_ASSET_IMAGE;
@@ -100,10 +93,40 @@ function formatLookupAddress(value?: string): string {
     .trim();
 }
 
-function parseDetailApplication(raw: unknown): DetailApplication | null {
-  if (!raw || typeof raw !== 'object') return null;
+function parseAiAnalysis(description: string): AiAnalysis {
+  const getField = (key: string): string => {
+    const match = description.match(
+      new RegExp(`${key}\\s*:\\s*([^\\n]+)`, 'u'),
+    );
+    return match ? match[1].trim() : '';
+  };
 
-  const item = raw as {
+  const recommendationsRaw = getField('추천 방향');
+  const recommendations = recommendationsRaw
+    ? recommendationsRaw
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
+
+  return {
+    recommendations,
+    explanation: getField('추천 설명'),
+    strength: getField('강점 요약'),
+    basis: getField('근거'),
+  };
+}
+
+function parseDetailApplication(raw: unknown): DetailApplication | null {
+  // openapi-fetch returns the full response body: { success, data: { ... } }
+  const unwrapped =
+    raw && typeof raw === 'object' && 'data' in raw
+      ? (raw as { data?: unknown }).data
+      : raw;
+
+  if (!unwrapped || typeof unwrapped !== 'object') return null;
+
+  const item = unwrapped as {
     id?: unknown;
     status?: unknown;
     appliedAt?: unknown;
@@ -111,17 +134,18 @@ function parseDetailApplication(raw: unknown): DetailApplication | null {
       address?: unknown;
       areaSqm?: unknown;
       assetType?: unknown;
+      description?: unknown;
+      images?: Array<{
+        fileUrl?: unknown;
+        sortOrder?: unknown;
+      }> | null;
     } | null;
-    images?: Array<{
-      fileUrl?: unknown;
-      sortOrder?: unknown;
-    }> | null;
   };
 
   if (typeof item.id !== 'string' || !isAppStatus(item.status)) return null;
 
-  const firstImage = Array.isArray(item.images)
-    ? [...item.images]
+  const firstImage = Array.isArray(item.asset?.images)
+    ? [...(item.asset?.images ?? [])]
         .sort((a, b) => {
           const aOrder = typeof a?.sortOrder === 'number' ? a.sortOrder : 9999;
           const bOrder = typeof b?.sortOrder === 'number' ? b.sortOrder : 9999;
@@ -145,6 +169,10 @@ function parseDetailApplication(raw: unknown): DetailApplication | null {
       ? item.asset.assetType
       : 'STONE_WALL_FIELD_HOUSE',
     thumbnailUrl: firstImage?.fileUrl ?? null,
+    aiDescription:
+      typeof item.asset?.description === 'string'
+        ? item.asset.description
+        : undefined,
   };
 }
 
@@ -155,7 +183,6 @@ export function LookupDetailContent({
   applicationId?: string;
   activeTab: DetailTab;
 }) {
-  useMyApplicationAnalysis(applicationId);
   const { data, isPending, isError } = useMyApplicationDetail(applicationId);
   const detail = parseDetailApplication(data);
 
@@ -239,36 +266,16 @@ function BuildingInfoTab({ detail }: { detail: DetailApplication }) {
 }
 
 function AnalysisTab({ detail }: { detail: DetailApplication }) {
-  const imageSrc =
-    detail.thumbnailUrl ??
-    LOOKUP_ASSET_IMAGE[detail.assetType] ??
-    DEFAULT_ASSET_IMAGE;
+  const imageSrc = LOOKUP_ASSET_IMAGE[detail.assetType] ?? DEFAULT_ASSET_IMAGE;
   const assetLabel = LOOKUP_ASSET_LABEL[detail.assetType] ?? detail.assetType;
+
+  const ai = detail.aiDescription
+    ? parseAiAnalysis(detail.aiDescription)
+    : null;
 
   return (
     <VStack style={{ gap: 'var(--size-space-300)' }}>
-      <Box
-        style={{
-          position: 'relative',
-          width: '100%',
-          aspectRatio: '1.9 / 1',
-          borderRadius: 'calc(var(--size-space-250) + var(--size-050))',
-          border: '1px solid var(--color-border-normal)',
-          background: 'linear-gradient(180deg, #fafcff 0%, #f5f7fb 100%)',
-          overflow: 'hidden',
-        }}
-      >
-        <Image
-          src={imageSrc}
-          alt="내 매물 분석 대표 이미지"
-          fill
-          unoptimized
-          sizes="100vw"
-          style={{
-            objectFit: 'cover',
-          }}
-        />
-      </Box>
+      <ThumbnailFrame imageSrc={imageSrc} alt="주택 유형 이미지" />
 
       <Text
         typography="heading3"
@@ -281,73 +288,146 @@ function AnalysisTab({ detail }: { detail: DetailApplication }) {
         {assetLabel}
       </Text>
 
-      <VStack
-        style={{
-          gap: 'var(--size-space-225)',
-          padding: 'var(--size-space-250)',
-          border: '1px solid var(--color-border-normal)',
-          borderRadius: 'calc(var(--size-space-250) + var(--size-050))',
-          background: 'var(--color-bg-canvas-sub)',
-        }}
-      >
+      {ai && ai.recommendations.length > 0 ? (
+        <VStack
+          style={{
+            gap: 'var(--size-space-225)',
+            padding: 'var(--size-space-250)',
+            border: '1px solid var(--color-border-normal)',
+            borderRadius: 'calc(var(--size-space-250) + var(--size-050))',
+            background: 'var(--color-bg-canvas-sub)',
+          }}
+        >
+          <Text
+            typography="body1"
+            style={{
+              color: 'var(--color-fg-subtle)',
+              fontWeight: 700,
+            }}
+          >
+            추천 임대 형태
+          </Text>
+
+          <HStack
+            style={{
+              flexWrap: 'wrap',
+              gap: 'var(--size-space-150)',
+            }}
+          >
+            {ai.recommendations.map((rec, i) => {
+              const palette = TAG_PALETTE[i % TAG_PALETTE.length];
+              return (
+                <Box
+                  key={rec}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '0 var(--size-space-175)',
+                    height: 'calc(var(--size-500) + var(--size-075))',
+                    borderRadius: '999px',
+                    border: `2px solid ${palette.border}`,
+                    background: palette.bg,
+                  }}
+                >
+                  <Text
+                    typography="heading6"
+                    style={{
+                      color: palette.color,
+                      fontWeight: 700,
+                      lineHeight: 1,
+                      wordBreak: 'keep-all',
+                    }}
+                  >
+                    {rec}
+                  </Text>
+                </Box>
+              );
+            })}
+          </HStack>
+        </VStack>
+      ) : null}
+
+      {ai?.strength ? (
+        <VStack
+          style={{
+            gap: 'var(--size-space-100)',
+            padding: 'var(--size-space-250)',
+            border: '1px solid var(--color-border-normal)',
+            borderRadius: 'calc(var(--size-space-250) + var(--size-050))',
+            background: 'var(--color-bg-canvas-sub)',
+          }}
+        >
+          <Text
+            typography="body1"
+            style={{ color: 'var(--color-fg-subtle)', fontWeight: 700 }}
+          >
+            강점 요약
+          </Text>
+          <Text
+            typography="body1"
+            style={{
+              color: 'var(--color-fg-normal)',
+              lineHeight: 1.6,
+              wordBreak: 'keep-all',
+            }}
+          >
+            {ai.strength}
+          </Text>
+        </VStack>
+      ) : null}
+
+      {ai?.explanation ? (
         <Text
-          typography="body1"
+          typography="heading4"
           style={{
             color: 'var(--color-fg-subtle)',
-            fontWeight: 700,
+            fontWeight: 500,
+            lineHeight: 1.62,
+            whiteSpace: 'pre-line',
+            wordBreak: 'keep-all',
           }}
         >
-          추천 임대 형태
+          {ai.explanation}
         </Text>
+      ) : null}
 
-        <HStack
+      {ai?.basis ? (
+        <VStack
           style={{
-            flexWrap: 'wrap',
-            gap: 'var(--size-space-150)',
+            gap: 'var(--size-space-100)',
+            padding: 'var(--size-space-250)',
+            borderLeft: '3px solid var(--color-border-primary)',
+            paddingLeft: 'var(--size-space-250)',
           }}
         >
-          {LEASE_TAGS.map((tag) => (
-            <Box
-              key={tag.label}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minWidth: 'calc(var(--size-800) + var(--size-space-150))',
-                height: 'calc(var(--size-500) + var(--size-075))',
-                padding: '0 var(--size-space-175)',
-                borderRadius: '999px',
-                border: `2px solid ${tag.borderColor}`,
-                background: tag.background,
-              }}
-            >
-              <Text
-                typography="heading5"
-                style={{
-                  color: tag.textColor,
-                  fontWeight: 800,
-                  lineHeight: 1,
-                }}
-              >
-                {tag.label}
-              </Text>
-            </Box>
-          ))}
-        </HStack>
-      </VStack>
+          <Text
+            typography="body2"
+            style={{ color: 'var(--color-fg-subtle)', fontWeight: 700 }}
+          >
+            분석 근거
+          </Text>
+          <Text
+            typography="body2"
+            style={{
+              color: 'var(--color-fg-subtle)',
+              lineHeight: 1.6,
+              wordBreak: 'keep-all',
+            }}
+          >
+            {ai.basis}
+          </Text>
+        </VStack>
+      ) : null}
 
-      <Text
-        typography="heading4"
-        style={{
-          color: 'var(--color-fg-subtle)',
-          fontWeight: 500,
-          lineHeight: 1.62,
-          whiteSpace: 'pre-line',
-          wordBreak: 'keep-all',
-        }}
-      >
-        {ANALYSIS_COPY}
-      </Text>
+      {!ai && (
+        <Text
+          typography="body1"
+          style={{ color: 'var(--color-fg-placeholder)' }}
+        >
+          AI 분석 정보가 없습니다.
+        </Text>
+      )}
     </VStack>
   );
 }
