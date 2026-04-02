@@ -24,6 +24,6 @@ kubectl apply -k k8s/frontend
 ## 확인
 
 ```bash
-kubectl get deploy,svc,ing -n re-village
-kubectl describe ingress frontend -n re-village
+kubectl get deploy,svc,ing -n goormthon-6
+kubectl describe ingress frontend -n goormthon-6
 ```
