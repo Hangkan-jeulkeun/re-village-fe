@@ -24,6 +24,17 @@ jobs:
         run: |
           BRANCH="${{ github.ref_name }}"
 
+          if [ "$BRANCH" = "main" ]; then
+            echo "main 브랜치는 PR 생성 대상이 아님 — 종료"
+            exit 0
+          fi
+
+          AHEAD_COUNT=$(git rev-list --count origin/main..HEAD 2>/dev/null || echo "0")
+          if [ "$AHEAD_COUNT" = "0" ]; then
+            echo "main 대비 신규 커밋 없음 — PR 생성 생략"
+            exit 0
+          fi
+
           # Skip if PR already exists
           EXISTING=$(gh pr list --head "$BRANCH" --json number -q '.[0].number' 2>/dev/null)
           if [ -n "$EXISTING" ]; then
