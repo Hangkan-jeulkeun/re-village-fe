@@ -32,7 +32,7 @@ jobs:
 
           if [ "$MERGEABLE" = "MERGEABLE" ]; then
             gh pr merge $PR_NUMBER \
-              --merge \
+              --squash \
               --delete-branch \
               --repo ${{ github.repository }}
             echo "✅ Auto-merged and deleted branch for PR #$PR_NUMBER"
