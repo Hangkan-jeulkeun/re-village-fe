@@ -1,13 +1,31 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button, Text, TextInput } from '@vapor-ui/core';
 
-import {
-  useRequestLookupCode,
-  useVerifyAndLookup,
-} from '@/features/applications/queries';
+import { useRequestCode, useVerifyCode } from '@/features/applications/queries';
+import { useAuthStore } from '@/stores/useAuthStore';
+import type { TokenResponse } from '@/types/auth';
+
+function extractTokens(payload: unknown): TokenResponse | null {
+  if (!payload || typeof payload !== 'object') return null;
+
+  if ('accessToken' in payload && 'refreshToken' in payload) {
+    const accessToken = payload.accessToken;
+    const refreshToken = payload.refreshToken;
+
+    if (typeof accessToken === 'string' && typeof refreshToken === 'string') {
+      return { accessToken, refreshToken };
+    }
+  }
+
+  if ('data' in payload) {
+    return extractTokens(payload.data);
+  }
+
+  return null;
+}
 
 export function PhoneVerificationForm() {
   const [name, setName] = useState('');
@@ -16,21 +34,32 @@ export function PhoneVerificationForm() {
   const [codeSent, setCodeSent] = useState(false);
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const setTokens = useAuthStore((state) => state.setTokens);
+  const redirectTo = searchParams.get('redirect') || '/lookup/history';
 
-  const { mutate: requestCode, isPending: isRequestingCode } =
-    useRequestLookupCode();
+  const { mutate: requestCode, isPending: isRequestingCode } = useRequestCode();
 
-  const { mutate: verifyAndLookup, isPending: isVerifying } =
-    useVerifyAndLookup();
+  const { mutate: verifyCode, isPending: isVerifying } = useVerifyCode();
 
   function handleRequestCode() {
     requestCode({ name, phone }, { onSuccess: () => setCodeSent(true) });
   }
 
   function handleVerify() {
-    verifyAndLookup(
+    verifyCode(
       { name, phone, code },
-      { onSuccess: () => router.push('/lookup/history') },
+      {
+        onSuccess: (payload) => {
+          const tokens = extractTokens(payload);
+
+          if (tokens) {
+            setTokens(tokens);
+          }
+
+          router.push(redirectTo);
+        },
+      },
     );
   }
 

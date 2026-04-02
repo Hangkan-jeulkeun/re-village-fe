@@ -48,40 +48,19 @@ export function useCreateApplicationMultipart() {
   });
 }
 
-export function useRequestLookupCode() {
+export function useRequestCode() {
   return useMutation({
     mutationFn: async (body: RequestLookupCodeRequest) => {
-      const { data, error } = await applicationsApi.requestLookupCode(body);
+      const { data, error } = await applicationsApi.requestCode(body);
       if (error) throw error;
       return data;
     },
   });
 }
 
-export function useRequestSubmitCode() {
+export function useVerifyCode() {
   return useMutation({
-    mutationFn: async (body: RequestLookupCodeRequest) => {
-      const { data, error } = await applicationsApi.requestSubmitCode(body);
-      if (error) throw error;
-      return data;
-    },
-  });
-}
-
-export function useVerifySubmitCode() {
-  return useMutation({
-    mutationFn: (body: VerifyLookupRequest) =>
-      applicationsApi.verifySubmitCode(body),
-  });
-}
-
-export function useVerifyAndLookup() {
-  return useMutation({
-    mutationFn: async (body: VerifyLookupRequest) => {
-      const { data, error } = await applicationsApi.verifyAndLookup(body);
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: (body: VerifyLookupRequest) => applicationsApi.verifyCode(body),
   });
 }
 

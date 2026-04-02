@@ -52,15 +52,10 @@ export const applicationsApi = {
       body,
     }),
 
-  requestLookupCode: (body: RequestLookupCodeRequest) =>
-    apiClient.POST('/api/v1/applications/lookup/request-code', { body }),
-
-  requestSubmitCode: (body: RequestLookupCodeRequest) =>
+  requestCode: (body: RequestLookupCodeRequest) =>
     apiClient.POST('/api/v1/applications/verification/request-code', { body }),
 
-  verifySubmitCode: async (
-    body: VerifyLookupRequest,
-  ): Promise<TokenResponse> => {
+  verifyCode: async (body: VerifyLookupRequest): Promise<TokenResponse> => {
     const res = await fetch(
       `${API_BASE_URL}/api/v1/applications/verification/verify`,
       {
@@ -76,9 +71,6 @@ export const applicationsApi = {
     const json = (await res.json()) as { data: TokenResponse };
     return json.data;
   },
-
-  verifyAndLookup: (body: VerifyLookupRequest) =>
-    apiClient.POST('/api/v1/applications/lookup/verify', { body }),
 
   cancel: (id: string) =>
     apiClient.PATCH('/api/v1/applications/{id}/cancel', {

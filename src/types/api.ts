@@ -140,23 +140,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/api/v1/applications/lookup/request-code': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** 인증번호 요청 (조회/신청 공용) */
-    post: operations['ApplicationsController_requestLookupCode'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   '/api/v1/applications/verification/request-code': {
     parameters: {
       query?: never;
@@ -166,8 +149,8 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** 신청용 인증번호 요청 (SMS 발송) */
-    post: operations['ApplicationsController_requestSubmitCode'];
+    /** 인증번호 요청 (조회/신청 공용) */
+    post: operations['ApplicationsController_requestCode'];
     delete?: never;
     options?: never;
     head?: never;
@@ -666,28 +649,7 @@ export interface operations {
       };
     };
   };
-  ApplicationsController_requestLookupCode: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['RequestVerificationDto'];
-      };
-    };
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  ApplicationsController_requestSubmitCode: {
+  ApplicationsController_requestCode: {
     parameters: {
       query?: never;
       header?: never;

@@ -1,4 +1,5 @@
 import { apiClient } from '@/lib/apiClient';
+import { useAuthStore } from '@/stores/useAuthStore';
 import type { operations } from '@/types/api';
 
 export type LookupListingsRequest =
@@ -57,4 +58,13 @@ export const lookupApi = {
     apiClient.GET('/api/v1/assets/listings', {
       params: { query: params },
     }),
+
+  getMyApplications: () => {
+    console.log(
+      '[lookupApi.getMyApplications] accessToken',
+      useAuthStore.getState().accessToken,
+    );
+
+    return apiClient.GET('/api/v1/applications/me');
+  },
 };

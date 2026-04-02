@@ -349,33 +349,10 @@
         ]
       }
     },
-    "/api/v1/applications/lookup/request-code": {
-      "post": {
-        "operationId": "ApplicationsController_requestLookupCode",
-        "summary": "인증번호 요청 (조회/신청 공용)",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RequestVerificationDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": ["applications"]
-      }
-    },
     "/api/v1/applications/verification/request-code": {
       "post": {
-        "operationId": "ApplicationsController_requestSubmitCode",
-        "summary": "신청용 인증번호 요청 (SMS 발송)",
+        "operationId": "ApplicationsController_requestCode",
+        "summary": "인증번호 요청 (조회/신청 공용)",
         "parameters": [],
         "requestBody": {
           "required": true,
