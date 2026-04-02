@@ -1,0 +1,19 @@
+import AppLayout from '@/components/layout/AppLayout';
+import { PhoneVerificationForm } from '@/features/lookup/PhoneVerificationForm';
+
+export default function LookupLoginPage() {
+  return (
+    <AppLayout
+      style={{
+        minHeight: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 'var(--page-padding-compact)',
+        background: 'linear-gradient(180deg, #ffffff 0%, #f7f9fd 100%)',
+      }}
+    >
+      <PhoneVerificationForm />
+    </AppLayout>
+  );
+}

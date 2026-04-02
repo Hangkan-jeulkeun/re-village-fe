@@ -9,8 +9,8 @@ import AppLayout from '@/components/layout/AppLayout';
 import Button, { ButtonPair } from '@/components/common/base/Button';
 import {
   useCreateApplicationMultipart,
-  useRequestSubmitCode,
-  useVerifySubmitCode,
+  useRequestCode,
+  useVerifyCode,
 } from '@/features/applications/queries';
 import { useApplyStore } from '@/stores/useApplyStore';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -54,8 +54,8 @@ export default function StepLayout({ children }: StepLayoutProps) {
 
   const toastManager = Toast.useToastManager();
   const createApplication = useCreateApplicationMultipart();
-  const requestSubmitCode = useRequestSubmitCode();
-  const verifySubmitCode = useVerifySubmitCode();
+  const requestSubmitCode = useRequestCode();
+  const verifySubmitCode = useVerifyCode();
 
   /* 전화번호: 숫자 기준 10자리 이상 (010-0000-0000) */
   const isPhoneValid = phone.replace(/\D/g, '').length >= 10;
