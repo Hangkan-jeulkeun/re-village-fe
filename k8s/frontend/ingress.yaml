@@ -2,6 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: frontend
+  namespace: goormthon-6
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "10m"
 spec:
@@ -14,6 +15,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: frontend
+                name: frontend-service
                 port:
                   number: 80
