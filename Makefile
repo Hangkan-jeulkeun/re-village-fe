@@ -1,12 +1,20 @@
 .PHONY: commit push pr release branch
 
-# Create branch: make branch feat 12
-_BRANCH_ARGS := $(filter-out branch,$(MAKECMDGOALS))
-_BRANCH_TYPE := $(word 1,$(_BRANCH_ARGS))
-_BRANCH_NUM  := $(word 2,$(_BRANCH_ARGS))
+# Create branch: make branch feat 12 [description words...]
+_BRANCH_ARGS       := $(filter-out branch,$(MAKECMDGOALS))
+_BRANCH_TYPE       := $(word 1,$(_BRANCH_ARGS))
+_BRANCH_NUM        := $(word 2,$(_BRANCH_ARGS))
+_BRANCH_DESC_WORDS := $(wordlist 3,$(words $(_BRANCH_ARGS)),$(_BRANCH_ARGS))
+_EMPTY             :=
+_SPACE             := $(_EMPTY) $(_EMPTY)
+_BRANCH_DESC       := $(subst $(_SPACE),-,$(_BRANCH_DESC_WORDS))
 
 branch:
-	@git checkout -b $(_BRANCH_TYPE)/#$(_BRANCH_NUM)
+	@if [ -n "$(_BRANCH_DESC)" ]; then \
+		git checkout -b $(_BRANCH_TYPE)/#$(_BRANCH_NUM)-$(_BRANCH_DESC); \
+	else \
+		git checkout -b $(_BRANCH_TYPE)/#$(_BRANCH_NUM); \
+	fi
 
 %:
 	@:

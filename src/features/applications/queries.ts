@@ -48,6 +48,16 @@ export function useRequestLookupCode() {
   });
 }
 
+export function useRequestSubmitCode() {
+  return useMutation({
+    mutationFn: async (body: RequestLookupCodeRequest) => {
+      const { data, error } = await applicationsApi.requestSubmitCode(body);
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
 export function useVerifyAndLookup() {
   return useMutation({
     mutationFn: async (body: VerifyLookupRequest) => {
