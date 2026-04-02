@@ -140,6 +140,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/applications/verification/verify': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** 신청용 인증번호 검증 */
+    post: operations['ApplicationsController_verifySubmitCode'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/applications/lookup/verify': {
     parameters: {
       query?: never;
@@ -355,12 +372,6 @@ export interface components {
        *     ]
        */
       photoUrls?: string[];
-    };
-    VerificationCodeResponseDto: {
-      /** @example 123456 */
-      code: string;
-      /** @example 180 */
-      expiresInSeconds: number;
     };
     RequestVerificationDto: {
       /** @example 010-1234-5678 */
@@ -619,9 +630,7 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content: {
-          'application/json': components['schemas']['VerificationCodeResponseDto'];
-        };
+        content?: never;
       };
     };
   };
@@ -642,9 +651,28 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content: {
-          'application/json': components['schemas']['VerificationCodeResponseDto'];
+        content?: never;
+      };
+    };
+  };
+  ApplicationsController_verifySubmitCode: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['VerifyCodeDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
         };
+        content?: never;
       };
     };
   };

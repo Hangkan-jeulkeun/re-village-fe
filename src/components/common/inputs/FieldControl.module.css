@@ -38,6 +38,14 @@
   padding: 0 var(--size-space-250);
 }
 
+.selectTrigger {
+  width: 100%;
+  min-height: var(--size-senior-input);
+  border-radius: var(--size-senior-radius);
+  font-size: var(--size-senior-font);
+  padding: 0 var(--size-space-250);
+}
+
 .textarea {
   width: 100%;
   min-height: 140px;

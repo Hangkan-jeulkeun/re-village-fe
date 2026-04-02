@@ -1,6 +1,21 @@
 import { apiClient } from '@/lib/apiClient';
 import type { components, operations } from '@/types/api';
 
+export interface CreateApplicationMultipartRequest {
+  name?: string;
+  phone?: string;
+  verificationCode?: string;
+  email?: string;
+  address?: string;
+  assetType?: string;
+  areaSqm?: number;
+  floorCount?: number;
+  hasYard?: boolean;
+  hasParking?: boolean;
+  notes?: string;
+  photos?: File[];
+}
+
 export type CreateApplicationRequest =
   operations['ApplicationsController_create']['requestBody']['content']['application/json'];
 export type RequestLookupCodeRequest =
@@ -40,6 +55,9 @@ export const applicationsApi = {
   requestSubmitCode: (body: RequestLookupCodeRequest) =>
     apiClient.POST('/api/v1/applications/verification/request-code', { body }),
 
+  verifySubmitCode: (body: VerifyLookupRequest) =>
+    apiClient.POST('/api/v1/applications/verification/verify', { body }),
+
   verifyAndLookup: (body: VerifyLookupRequest) =>
     apiClient.POST('/api/v1/applications/lookup/verify', { body }),
 
@@ -77,4 +95,34 @@ export const applicationsApi = {
       params: { path: { id } },
       body,
     }),
+
+  createMultipart: async (data: CreateApplicationMultipartRequest) => {
+    const { photos, ...fields } = data;
+    const formData = new FormData();
+
+    (
+      Object.entries(fields) as [
+        string,
+        string | number | boolean | undefined,
+      ][]
+    ).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.append(key, String(value));
+      }
+    });
+
+    photos?.forEach((file) => formData.append('photos', file));
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications`,
+      { method: 'POST', body: formData },
+    );
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: res.statusText }));
+      throw error;
+    }
+
+    return res;
+  },
 };

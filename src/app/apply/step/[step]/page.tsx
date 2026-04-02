@@ -2,17 +2,19 @@
 
 import { useParams, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { useRef, useState } from 'react';
-// verificationCode·codeError는 useApplyStore에서 관리
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentType, SVGProps } from 'react';
-import { Text } from '@vapor-ui/core';
+import { Text, Toast } from '@vapor-ui/core';
 import {
+  CameraIcon,
   EditOutlineIcon,
   CameraOutlineIcon,
   DocumentViewerOutlineIcon,
   SearchOutlineIcon,
 } from '@vapor-ui/icons';
+import Button from '@/components/common/base/Button';
 import Input from '@/components/common/inputs/Input';
+import Select from '@/components/common/inputs/Select';
 import { useApplyStore } from '@/stores/useApplyStore';
 import { formatPhoneNumber } from '@/utils/formatPhoneNumber';
 
@@ -72,20 +74,27 @@ export default function ApplyStepPage() {
     buildingType,
     verificationSent,
     verificationCode,
-    codeError,
+    photos,
     setName,
     setPhone,
     setAddress,
     setArea,
     setBuildingType,
     setVerificationCode,
+    setPhotos,
   } = useApplyStore();
-  const [uploadedPhotos, setUploadedPhotos] = useState([
-    '건물전경_01.jpg',
-    '건물전경_02.jpg',
-  ]);
+  const toastManager = Toast.useToastManager();
+  const previewUrls = useMemo(
+    () => photos.map((file) => URL.createObjectURL(file)),
+    [photos],
+  );
   const [attachedDocuments, setAttachedDocuments] = useState<string[]>([]);
-  const [governmentLinked, setGovernmentLinked] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach(URL.revokeObjectURL);
+    };
+  }, [previewUrls]);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const documentInputRef = useRef<HTMLInputElement>(null);
 
@@ -98,16 +107,41 @@ export default function ApplyStepPage() {
   const StepIcon = STEP_ICONS[step - 1] ?? null;
   const stepIconColor = STEP_ICON_COLORS[step - 1] ?? undefined;
 
+  const MAX_PHOTO_SIZE_BYTES = 10 * 1024 * 1024;
+  const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png'];
+
   const handlePhotoUpload = (files: FileList | null) => {
     if (!files) return;
-    setUploadedPhotos((prev) => [
-      ...prev,
-      ...Array.from(files).map((f) => f.name),
-    ]);
+
+    const valid: File[] = [];
+
+    Array.from(files).forEach((file) => {
+      if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
+        toastManager.add({
+          title: '지원하지 않는 형식',
+          description: `JPG, PNG 파일만 업로드할 수 있습니다 (${file.name})`,
+          colorPalette: 'danger',
+        });
+        return;
+      }
+      if (file.size > MAX_PHOTO_SIZE_BYTES) {
+        toastManager.add({
+          title: '파일 크기 초과',
+          description: `파일 크기는 10MB 이하여야 합니다 (${file.name})`,
+          colorPalette: 'danger',
+        });
+        return;
+      }
+      valid.push(file);
+    });
+
+    if (valid.length > 0) {
+      setPhotos([...photos, ...valid]);
+    }
   };
 
-  const handleDeletePhoto = (target: string) => {
-    setUploadedPhotos((prev) => prev.filter((p) => p !== target));
+  const handleDeletePhoto = (index: number) => {
+    setPhotos(photos.filter((_, i) => i !== index));
   };
 
   const handleDocumentUpload = (files: FileList | null) => {
@@ -116,16 +150,6 @@ export default function ApplyStepPage() {
       ...prev,
       ...Array.from(files).map((f) => f.name),
     ]);
-  };
-
-  const handlePrivateCertSimulation = () => {
-    window.setTimeout(() => {
-      setGovernmentLinked(true);
-      setAttachedDocuments(['건축물대장.pdf', '토지대장.pdf']);
-      setBuildingType('단독 주택');
-      setAddress('제주특별자치도 서귀포시 강정동 230번지');
-      setArea('84.5');
-    }, 500);
   };
 
   return (
@@ -218,7 +242,6 @@ export default function ApplyStepPage() {
               placeholder="여섯자리를 입력하세요"
               value={verificationCode}
               onChange={(e) => setVerificationCode(e.target.value)}
-              error={codeError || undefined}
             />
           ) : null}
         </section>
@@ -250,15 +273,27 @@ export default function ApplyStepPage() {
               justifyContent: 'center',
               gap: 'var(--gap-xs)',
               height: '154px',
-              border: '1.5px dashed var(--color-border-normal)',
+              border: '1.5px dashed var(--color-border-primary)',
               borderRadius: '16px',
               background: 'var(--color-bg-canvas-sub)',
               cursor: 'pointer',
             }}
             onClick={() => photoInputRef.current?.click()}
           >
-            <span style={{ fontSize: '28px' }}>📷</span>
-            <strong style={{ fontSize: 'var(--size-senior-label)' }}>
+            <CameraIcon
+              aria-hidden="true"
+              style={{
+                width: '28px',
+                height: '28px',
+                color: 'var(--color-brand-interactive)',
+              }}
+            />
+            <strong
+              style={{
+                fontSize: 'var(--size-senior-label)',
+                color: 'var(--color-brand-interactive)',
+              }}
+            >
               사진 추가하기
             </strong>
             <p
@@ -276,46 +311,32 @@ export default function ApplyStepPage() {
             typography="body2"
             style={{ color: 'var(--color-fg-normal)', fontWeight: 700 }}
           >
-            추가된 사진 ({uploadedPhotos.length})
+            추가된 사진 ({photos.length})
           </Text>
 
           <div
             style={{ display: 'flex', gap: 'var(--gap-sm)', flexWrap: 'wrap' }}
           >
-            {uploadedPhotos.map((photo) => (
+            {photos.map((photo, index) => (
               <div
-                key={photo}
+                key={`${photo.name}-${index}`}
                 style={{ position: 'relative', width: '72px', height: '72px' }}
               >
-                <div
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={previewUrls[index]}
+                  alt={photo.name}
                   style={{
                     width: '100%',
                     height: '100%',
                     borderRadius: 'var(--size-senior-radius)',
                     border: '1px solid var(--color-border-normal)',
-                    background: 'var(--color-bg-canvas-sub)',
-                    display: 'flex',
-                    alignItems: 'flex-end',
-                    padding: 'var(--gap-xs)',
+                    objectFit: 'cover',
                   }}
-                >
-                  <span
-                    style={{
-                      display: 'block',
-                      width: '100%',
-                      fontSize: '9px',
-                      color: 'var(--color-fg-subtle)',
-                      wordBreak: 'break-all',
-                      lineHeight: 1.3,
-                      textAlign: 'center',
-                    }}
-                  >
-                    {photo}
-                  </span>
-                </div>
+                />
                 <button
                   type="button"
-                  aria-label={`${photo} 삭제`}
+                  aria-label={`${photo.name} 삭제`}
                   style={{
                     position: 'absolute',
                     top: '-6px',
@@ -332,7 +353,7 @@ export default function ApplyStepPage() {
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
-                  onClick={() => handleDeletePhoto(photo)}
+                  onClick={() => handleDeletePhoto(index)}
                 >
                   ✕
                 </button>
@@ -360,46 +381,12 @@ export default function ApplyStepPage() {
             onChange={(e) => handleDocumentUpload(e.target.files)}
           />
 
-          <button
-            type="button"
-            style={{
-              height: 'var(--size-senior-btn)',
-              border:
-                'var(--size-senior-border) solid var(--color-border-primary)',
-              borderRadius: 'var(--size-senior-radius)',
-              background: 'var(--color-bg-canvas)',
-              color: 'var(--color-fg-primary)',
-              fontSize: 'var(--size-senior-font)',
-              fontWeight: 700,
-              cursor: 'pointer',
-            }}
-            onClick={() => {
-              if (!governmentLinked) {
-                handlePrivateCertSimulation();
-              } else {
-                documentInputRef.current?.click();
-              }
-            }}
+          <Button
+            tone="secondary"
+            onClick={() => window.open('https://www.gov.kr', '_blank')}
           >
-            {governmentLinked
-              ? '추가 서류 첨부하기'
-              : '민간인증으로 서류 불러오기'}
-          </button>
-
-          {governmentLinked ? (
-            <div
-              style={{
-                padding: 'var(--gap-sm) var(--gap-md)',
-                border: '1px solid var(--color-brand-light)',
-                borderRadius: 'var(--size-senior-radius)',
-                background: 'var(--color-bg-primary-100)',
-                fontSize: '14px',
-                color: 'var(--color-fg-primary)',
-              }}
-            >
-              민간인증 연계 완료 — 건물 정보가 자동 입력되었습니다.
-            </div>
-          ) : null}
+            민간인증으로 서류 발급받기
+          </Button>
 
           {attachedDocuments.length > 0 ? (
             <ul
@@ -417,55 +404,25 @@ export default function ApplyStepPage() {
             </ul>
           ) : null}
 
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 'var(--gap-xs)',
-            }}
-          >
-            <label
-              style={{
-                fontSize: 'var(--size-senior-label)',
-                fontWeight: 700,
-                color: 'var(--color-fg-normal)',
-              }}
-              htmlFor="buildingType"
-            >
-              건물 종류
-            </label>
-            <select
-              id="buildingType"
-              style={{
-                width: '100%',
-                height: 'var(--size-senior-input)',
-                padding: '0 var(--gap-md)',
-                border:
-                  'var(--size-senior-border) solid var(--color-border-normal)',
-                borderRadius: 'var(--size-senior-radius)',
-                background: 'var(--color-bg-canvas)',
-                fontSize: 'var(--size-senior-font)',
-                color: buildingType
-                  ? 'var(--color-fg-normal)'
-                  : 'var(--color-fg-placeholder)',
-              }}
-              value={buildingType}
-              onChange={(e) => setBuildingType(e.target.value)}
-            >
-              <option value="" disabled>
-                Placeholder
-              </option>
-              <option value="단독 주택">단독 주택</option>
-              <option value="다가구 주택">다가구 주택</option>
-              <option value="근린 생활 시설">근린 생활 시설</option>
-            </select>
-          </div>
+          <Select
+            label="건물 종류"
+            value={buildingType}
+            onValueChange={setBuildingType}
+            placeholder="건물 종류를 선택해주세요"
+            disabled={governmentLinked}
+            options={[
+              { value: '단독 주택', label: '단독 주택' },
+              { value: '다가구 주택', label: '다가구 주택' },
+              { value: '근린 생활 시설', label: '근린 생활 시설' },
+            ]}
+          />
 
           <Input
             id="address"
             label="주소"
             placeholder="예: 제주특별자치도 서귀포시..."
             value={address}
+            readOnly={governmentLinked}
             onChange={(e) => setAddress(e.target.value)}
           />
 
@@ -475,6 +432,7 @@ export default function ApplyStepPage() {
             inputMode="decimal"
             placeholder="예: 84.5"
             value={area}
+            readOnly={governmentLinked}
             onChange={(e) => setArea(e.target.value)}
           />
         </section>
@@ -511,7 +469,6 @@ export default function ApplyStepPage() {
                 { dt: '건물 종류', dd: buildingType || '—' },
                 { dt: '주소', dd: address || '—' },
                 { dt: '면적', dd: area ? `${area} m²` : '—' },
-                { dt: '건물 사진', dd: `${uploadedPhotos.length}장 첨부` },
               ].map(({ dt, dd }) => (
                 <div
                   key={dt}
@@ -534,6 +491,56 @@ export default function ApplyStepPage() {
                   </dd>
                 </div>
               ))}
+
+              {/* 건물 사진 */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '80px 1fr',
+                  gap: 'var(--gap-xs)',
+                  fontSize: 'var(--size-senior-label)',
+                }}
+              >
+                <dt style={{ color: 'var(--color-fg-placeholder)' }}>
+                  건물 사진
+                </dt>
+                <dd style={{ margin: 0 }}>
+                  {photos.length === 0 ? (
+                    <span
+                      style={{
+                        color: 'var(--color-fg-normal)',
+                        fontWeight: 500,
+                      }}
+                    >
+                      —
+                    </span>
+                  ) : (
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: 'var(--gap-xs)',
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      {photos.map((photo, index) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          key={`review-${photo.name}-${index}`}
+                          src={previewUrls[index]}
+                          alt={photo.name}
+                          style={{
+                            width: '56px',
+                            height: '56px',
+                            borderRadius: 'var(--size-senior-radius)',
+                            border: '1px solid var(--color-border-normal)',
+                            objectFit: 'cover',
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </dd>
+              </div>
             </dl>
           </div>
 
