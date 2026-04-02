@@ -66,6 +66,7 @@ export default function Select({
         value={value}
         onValueChange={(val) => onValueChange?.(val as string)}
         placeholder={placeholder}
+        disabled={disabled}
       >
         <VaporSelect.Trigger
           className={[styles.selectTrigger, triggerClassName]

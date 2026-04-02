@@ -68,7 +68,7 @@
     "/api/v1/applications": {
       "post": {
         "operationId": "ApplicationsController_create",
-        "summary": "신청 접수 (회원가입 없이 이름/전화번호 기반)",
+        "summary": "신청 접수 (액세스 토큰 기반)",
         "parameters": [
           {
             "name": "content-type",
@@ -81,24 +81,12 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "JSON 또는 multipart/form-data 지원. multipart 사용 시 일반 필드는 그대로 넣고, 사진은 photos, 서류는 documents 필드에 파일 첨부하세요.",
+          "description": "액세스 토큰 필수. JSON 또는 multipart/form-data 지원. multipart 사용 시 일반 필드는 그대로 넣고, 사진은 photos, 서류(PDF)는 documents 필드에 파일 첨부하세요. documents에 PDF가 포함되면 Gemini가 주소/건물유형/면적 등을 자동 추출합니다.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "name": {
-                    "type": "string",
-                    "example": "홍길동"
-                  },
-                  "phone": {
-                    "type": "string",
-                    "example": "010-1234-5678"
-                  },
-                  "verificationCode": {
-                    "type": "string",
-                    "example": "123456"
-                  },
                   "email": {
                     "type": "string",
                     "example": "owner@example.com"
@@ -133,7 +121,7 @@
                   },
                   "payload": {
                     "type": "string",
-                    "example": "{\"name\":\"홍길동\",\"phone\":\"010-1234-5678\",\"address\":\"제주특별자치도 서귀포시 천지동\"}",
+                    "example": "{\"address\":\"제주특별자치도 서귀포시 천지동\",\"assetType\":\"EMPTY_HOUSE\"}",
                     "description": "선택. multipart에서 JSON 문자열로 전달 가능. payload와 개별 필드가 겹치면 개별 필드 우선"
                   },
                   "photos": {
@@ -157,18 +145,6 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "name": {
-                    "type": "string",
-                    "example": "홍길동"
-                  },
-                  "phone": {
-                    "type": "string",
-                    "example": "010-1234-5678"
-                  },
-                  "verificationCode": {
-                    "type": "string",
-                    "example": "123456"
-                  },
                   "email": {
                     "type": "string",
                     "example": "owner@example.com"
@@ -203,7 +179,7 @@
                   },
                   "payload": {
                     "type": "string",
-                    "example": "{\"name\":\"홍길동\",\"phone\":\"010-1234-5678\",\"address\":\"제주특별자치도 서귀포시 천지동\"}",
+                    "example": "{\"address\":\"제주특별자치도 서귀포시 천지동\",\"assetType\":\"EMPTY_HOUSE\"}",
                     "description": "선택. multipart에서 JSON 문자열로 전달 가능. payload와 개별 필드가 겹치면 개별 필드 우선"
                   },
                   "photos": {
@@ -230,7 +206,84 @@
             "description": ""
           }
         },
-        "tags": ["applications"]
+        "tags": ["applications"],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
+      }
+    },
+    "/api/v1/applications/documents/extract": {
+      "post": {
+        "operationId": "ApplicationsController_extractDocuments",
+        "summary": "PDF 서류 AI 자동입력 추출 (액세스 토큰 기반)",
+        "parameters": [
+          {
+            "name": "content-type",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "JSON 또는 multipart/form-data 지원. multipart 사용 시 documents 필드에 PDF 파일을 첨부하세요.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "documents": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "documentUrls": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": ["https://cdn.example.com/docs/registry.pdf"]
+                  },
+                  "payload": {
+                    "type": "string",
+                    "example": "{\"documentUrls\":[\"https://cdn.example.com/docs/registry.pdf\"]}"
+                  },
+                  "documents": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["applications"],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
       }
     },
     "/api/v1/applications/me": {
@@ -255,6 +308,34 @@
       "get": {
         "operationId": "ApplicationsController_analyzeMyApplication",
         "summary": "내 신청 건 AI 매물 분석 (액세스 토큰 기반)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["applications"],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
+      }
+    },
+    "/api/v1/applications/me/{id}": {
+      "get": {
+        "operationId": "ApplicationsController_myApplicationDetail",
+        "summary": "내 신청 건 상세 조회 (액세스 토큰 기반)",
         "parameters": [
           {
             "name": "id",
@@ -351,7 +432,7 @@
     "/api/v1/applications/lookup/verify": {
       "post": {
         "operationId": "ApplicationsController_verifyAndLookup",
-        "summary": "인증번호 검증 후 신청내역 조회",
+        "summary": "인증번호 검증 후 토큰 발급 + 신청내역 조회",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -371,33 +452,10 @@
         "tags": ["applications"]
       }
     },
-    "/api/v1/applications/lookup/detail": {
-      "post": {
-        "operationId": "ApplicationsController_lookupDetail",
-        "summary": "인증번호 검증 후 특정 신청 상세 조회",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LookupApplicationDetailDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": ["applications"]
-      }
-    },
     "/api/v1/applications/{id}/cancel": {
       "patch": {
-        "operationId": "ApplicationsController_cancel",
-        "summary": "신청 취소 (전화번호 인증 기반)",
+        "operationId": "ApplicationsController_cancelMyApplication",
+        "summary": "신청 취소 (액세스 토큰 기반)",
         "parameters": [
           {
             "name": "id",
@@ -409,22 +467,17 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CancelApplicationDto"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": ""
           }
         },
-        "tags": ["applications"]
+        "tags": ["applications"],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
       }
     },
     "/api/v1/applications/admin/summary": {
@@ -784,33 +837,23 @@
       "RequestVerificationDto": {
         "type": "object",
         "properties": {
+          "name": {
+            "type": "string",
+            "example": "홍길동"
+          },
           "phone": {
             "type": "string",
             "example": "010-1234-5678"
           }
         },
-        "required": ["phone"]
+        "required": ["name", "phone"]
       },
       "VerifyCodeDto": {
         "type": "object",
         "properties": {
-          "phone": {
+          "name": {
             "type": "string",
-            "example": "010-1234-5678"
-          },
-          "code": {
-            "type": "string",
-            "example": "123456"
-          }
-        },
-        "required": ["phone", "code"]
-      },
-      "LookupApplicationDetailDto": {
-        "type": "object",
-        "properties": {
-          "applicationId": {
-            "type": "string",
-            "format": "uuid"
+            "example": "홍길동"
           },
           "phone": {
             "type": "string",
@@ -821,21 +864,7 @@
             "example": "123456"
           }
         },
-        "required": ["applicationId", "phone", "code"]
-      },
-      "CancelApplicationDto": {
-        "type": "object",
-        "properties": {
-          "phone": {
-            "type": "string",
-            "example": "010-1234-5678"
-          },
-          "code": {
-            "type": "string",
-            "example": "123456"
-          }
-        },
-        "required": ["phone", "code"]
+        "required": ["name", "phone", "code"]
       },
       "UpdateStatusDto": {
         "type": "object",

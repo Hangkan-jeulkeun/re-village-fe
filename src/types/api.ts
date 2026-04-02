@@ -64,8 +64,25 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** 신청 접수 (회원가입 없이 이름/전화번호 기반) */
+    /** 신청 접수 (액세스 토큰 기반) */
     post: operations['ApplicationsController_create'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/applications/documents/extract': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** PDF 서류 AI 자동입력 추출 (액세스 토큰 기반) */
+    post: operations['ApplicationsController_extractDocuments'];
     delete?: never;
     options?: never;
     head?: never;
@@ -98,6 +115,23 @@ export interface paths {
     };
     /** 내 신청 건 AI 매물 분석 (액세스 토큰 기반) */
     get: operations['ApplicationsController_analyzeMyApplication'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/applications/me/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 내 신청 건 상세 조회 (액세스 토큰 기반) */
+    get: operations['ApplicationsController_myApplicationDetail'];
     put?: never;
     post?: never;
     delete?: never;
@@ -166,25 +200,8 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** 인증번호 검증 후 신청내역 조회 */
+    /** 인증번호 검증 후 토큰 발급 + 신청내역 조회 */
     post: operations['ApplicationsController_verifyAndLookup'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/applications/lookup/detail': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** 인증번호 검증 후 특정 신청 상세 조회 */
-    post: operations['ApplicationsController_lookupDetail'];
     delete?: never;
     options?: never;
     head?: never;
@@ -204,8 +221,8 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    /** 신청 취소 (전화번호 인증 기반) */
-    patch: operations['ApplicationsController_cancel'];
+    /** 신청 취소 (액세스 토큰 기반) */
+    patch: operations['ApplicationsController_cancelMyApplication'];
     trace?: never;
   };
   '/api/v1/applications/admin/summary': {
@@ -374,24 +391,14 @@ export interface components {
       photoUrls?: string[];
     };
     RequestVerificationDto: {
+      /** @example 홍길동 */
+      name: string;
       /** @example 010-1234-5678 */
       phone: string;
     };
     VerifyCodeDto: {
-      /** @example 010-1234-5678 */
-      phone: string;
-      /** @example 123456 */
-      code: string;
-    };
-    LookupApplicationDetailDto: {
-      /** Format: uuid */
-      applicationId: string;
-      /** @example 010-1234-5678 */
-      phone: string;
-      /** @example 123456 */
-      code: string;
-    };
-    CancelApplicationDto: {
+      /** @example 홍길동 */
+      name: string;
       /** @example 010-1234-5678 */
       phone: string;
       /** @example 123456 */
@@ -501,16 +508,10 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    /** @description JSON 또는 multipart/form-data 지원. multipart 사용 시 일반 필드는 그대로 넣고, 사진은 photos, 서류는 documents 필드에 파일 첨부하세요. */
+    /** @description 액세스 토큰 필수. JSON 또는 multipart/form-data 지원. multipart 사용 시 일반 필드는 그대로 넣고, 사진은 photos, 서류(PDF)는 documents 필드에 파일 첨부하세요. documents에 PDF가 포함되면 Gemini가 주소/건물유형/면적 등을 자동 추출합니다. */
     requestBody: {
       content: {
         'application/json': {
-          /** @example 홍길동 */
-          name?: string;
-          /** @example 010-1234-5678 */
-          phone?: string;
-          /** @example 123456 */
-          verificationCode?: string;
           /** @example owner@example.com */
           email?: string;
           /** @example 제주특별자치도 서귀포시 천지동 */
@@ -529,19 +530,13 @@ export interface operations {
           notes?: string;
           /**
            * @description 선택. multipart에서 JSON 문자열로 전달 가능. payload와 개별 필드가 겹치면 개별 필드 우선
-           * @example {"name":"홍길동","phone":"010-1234-5678","address":"제주특별자치도 서귀포시 천지동"}
+           * @example {"address":"제주특별자치도 서귀포시 천지동","assetType":"EMPTY_HOUSE"}
            */
           payload?: string;
           photos?: string[];
           documents?: string[];
         };
         'multipart/form-data': {
-          /** @example 홍길동 */
-          name?: string;
-          /** @example 010-1234-5678 */
-          phone?: string;
-          /** @example 123456 */
-          verificationCode?: string;
           /** @example owner@example.com */
           email?: string;
           /** @example 제주특별자치도 서귀포시 천지동 */
@@ -560,10 +555,55 @@ export interface operations {
           notes?: string;
           /**
            * @description 선택. multipart에서 JSON 문자열로 전달 가능. payload와 개별 필드가 겹치면 개별 필드 우선
-           * @example {"name":"홍길동","phone":"010-1234-5678","address":"제주특별자치도 서귀포시 천지동"}
+           * @example {"address":"제주특별자치도 서귀포시 천지동","assetType":"EMPTY_HOUSE"}
            */
           payload?: string;
           photos?: string[];
+          documents?: string[];
+        };
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  ApplicationsController_extractDocuments: {
+    parameters: {
+      query?: never;
+      header: {
+        'content-type': string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    /** @description JSON 또는 multipart/form-data 지원. multipart 사용 시 documents 필드에 PDF 파일을 첨부하세요. */
+    requestBody: {
+      content: {
+        'application/json': {
+          /**
+           * @example [
+           *       "https://cdn.example.com/docs/registry.pdf"
+           *     ]
+           */
+          documentUrls?: string[];
+          /** @example {"documentUrls":["https://cdn.example.com/docs/registry.pdf"]} */
+          payload?: string;
+          documents?: string[];
+        };
+        'multipart/form-data': {
+          /**
+           * @example [
+           *       "https://cdn.example.com/docs/registry.pdf"
+           *     ]
+           */
+          documentUrls?: string[];
+          /** @example {"documentUrls":["https://cdn.example.com/docs/registry.pdf"]} */
+          payload?: string;
           documents?: string[];
         };
       };
@@ -595,6 +635,25 @@ export interface operations {
     };
   };
   ApplicationsController_analyzeMyApplication: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  ApplicationsController_myApplicationDetail: {
     parameters: {
       query?: never;
       header?: never;
@@ -697,28 +756,7 @@ export interface operations {
       };
     };
   };
-  ApplicationsController_lookupDetail: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['LookupApplicationDetailDto'];
-      };
-    };
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  ApplicationsController_cancel: {
+  ApplicationsController_cancelMyApplication: {
     parameters: {
       query?: never;
       header?: never;
@@ -727,11 +765,7 @@ export interface operations {
       };
       cookie?: never;
     };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CancelApplicationDto'];
-      };
-    };
+    requestBody?: never;
     responses: {
       200: {
         headers: {

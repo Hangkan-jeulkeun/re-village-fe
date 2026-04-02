@@ -2,13 +2,14 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useAuthStore } from '@/stores/useAuthStore';
+import type { TokenResponse } from '@/types/auth';
+
 import { applicationsApi } from './api';
 import type {
   AdminListParams,
-  CancelApplicationRequest,
   CreateApplicationRequest,
   CreateApplicationMultipartRequest,
-  LookupDetailRequest,
   RequestLookupCodeRequest,
   UpdateApplicationStatusRequest,
   VerifyLookupRequest,
@@ -75,7 +76,10 @@ export function useVerifySubmitCode() {
     mutationFn: async (body: VerifyLookupRequest) => {
       const { data, error } = await applicationsApi.verifySubmitCode(body);
       if (error) throw error;
-      return data;
+      return data as TokenResponse;
+    },
+    onSuccess: (data) => {
+      useAuthStore.getState().setTokens(data);
     },
   });
 }
@@ -90,24 +94,11 @@ export function useVerifyAndLookup() {
   });
 }
 
-export function useLookupDetail() {
-  return useMutation({
-    mutationFn: async (body: LookupDetailRequest) => {
-      const { data, error } = await applicationsApi.lookupDetail(body);
-      if (error) throw error;
-      return data;
-    },
-  });
-}
-
 export function useCancelApplication() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      id,
-      ...body
-    }: CancelApplicationRequest & { id: string }) => {
-      const { data, error } = await applicationsApi.cancel(id, body);
+    mutationFn: async (id: string) => {
+      const { data, error } = await applicationsApi.cancel(id);
       if (error) throw error;
       return data;
     },

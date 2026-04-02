@@ -2,6 +2,9 @@
 
 import { useMutation } from '@tanstack/react-query';
 
+import { useAuthStore } from '@/stores/useAuthStore';
+import type { TokenResponse } from '@/types/auth';
+
 import { authApi } from './api';
 import type { LoginRequest } from './api';
 
@@ -10,7 +13,10 @@ export function useLogin() {
     mutationFn: async (body: LoginRequest) => {
       const { data, error } = await authApi.login(body);
       if (error) throw error;
-      return data;
+      return data as TokenResponse;
+    },
+    onSuccess: (data) => {
+      useAuthStore.getState().setTokens(data);
     },
   });
 }

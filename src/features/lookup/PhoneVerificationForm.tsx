@@ -10,6 +10,7 @@ import {
 } from '@/features/applications/queries';
 
 export function PhoneVerificationForm() {
+  const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [codeSent, setCodeSent] = useState(false);
@@ -23,12 +24,12 @@ export function PhoneVerificationForm() {
     useVerifyAndLookup();
 
   function handleRequestCode() {
-    requestCode({ phone }, { onSuccess: () => setCodeSent(true) });
+    requestCode({ name, phone }, { onSuccess: () => setCodeSent(true) });
   }
 
   function handleVerify() {
     verifyAndLookup(
-      { phone, code },
+      { name, phone, code },
       { onSuccess: () => router.push('/lookup/history') },
     );
   }
@@ -63,6 +64,12 @@ export function PhoneVerificationForm() {
           marginTop: '14px',
         }}
       >
+        <TextInput
+          placeholder="이름"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          style={{ height: '52px', borderRadius: '14px' }}
+        />
         <div style={{ display: 'flex', gap: '8px' }}>
           <TextInput
             placeholder="휴대폰 번호"
@@ -73,7 +80,7 @@ export function PhoneVerificationForm() {
           <Button
             size="md"
             color="primary"
-            disabled={!phone || isRequestingCode}
+            disabled={!name || !phone || isRequestingCode}
             onClick={handleRequestCode}
             style={{ height: '52px', borderRadius: '14px', flexShrink: 0 }}
           >
