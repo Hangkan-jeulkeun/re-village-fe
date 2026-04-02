@@ -10,7 +10,6 @@ export function LookupHistoryLogger() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const accessToken = useAuthStore((state) => state.accessToken);
   const clearTokens = useAuthStore((state) => state.clearTokens);
   const { data, error, refetch } = useMyApplications();
 
@@ -21,13 +20,8 @@ export function LookupHistoryLogger() {
   })();
 
   useEffect(() => {
-    if (!accessToken) {
-      router.replace(redirectUrl);
-      return;
-    }
-
     void refetch();
-  }, [accessToken, redirectUrl, refetch, router]);
+  }, [refetch]);
 
   useEffect(() => {
     if (data) {
@@ -36,18 +30,18 @@ export function LookupHistoryLogger() {
   }, [data]);
 
   useEffect(() => {
-    if (error) {
-      console.error('[lookup/history] my applications error', error);
+    if (!error) return;
 
-      const statusCode =
-        typeof error === 'object' && error !== null && 'error' in error
-          ? (error.error as { statusCode?: number })?.statusCode
-          : undefined;
+    console.error('[lookup/history] my applications error', error);
 
-      if (statusCode === 401) {
-        clearTokens();
-        router.replace(redirectUrl);
-      }
+    const statusCode =
+      typeof error === 'object' && error !== null && 'error' in error
+        ? (error.error as { statusCode?: number })?.statusCode
+        : undefined;
+
+    if (statusCode === 401) {
+      clearTokens();
+      router.replace(redirectUrl);
     }
   }, [clearTokens, error, redirectUrl, router]);
 
