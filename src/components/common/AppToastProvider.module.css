@@ -1,7 +1,29 @@
 .viewport {
   right: auto;
   left: 50%;
+  top: auto;
+  bottom: 160px;
   transform: translateX(-50%);
+}
+
+/* 아래에서 위로 올라오는 애니메이션 */
+.viewport > div {
+  top: auto;
+  bottom: 0;
+  transform-origin: bottom center;
+}
+
+.viewport > div[data-starting-style],
+.viewport > div[data-ending-style] {
+  transform: translateY(150%);
+}
+
+.viewport > div[data-ending-style][data-swipe-direction='up'] {
+  transform: translateY(calc(var(--toast-swipe-movement-y) - 150%));
+}
+
+.content {
+  padding: var(--gap-md);
 }
 
 .body {

@@ -514,10 +514,9 @@
 
 .urgentItemTop {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 10px;
 }
 
 .urgentName {
@@ -542,8 +541,7 @@
 }
 
 .processBtn {
-  width: 100%;
-  padding: 7px;
+  padding: 6px 14px;
   background: var(--color-brand-interactive);
   color: #fff;
   border: none;
@@ -551,6 +549,8 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: background 0.15s;
 }
 

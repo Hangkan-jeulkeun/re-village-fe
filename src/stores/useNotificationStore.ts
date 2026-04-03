@@ -16,6 +16,8 @@ interface NotificationState {
   clearAll: () => void;
 }
 
+const STORE_KEY = 'admin-notifications';
+
 export const useNotificationStore = create<NotificationState>()(
   persist(
     (set) => ({
@@ -41,6 +43,15 @@ export const useNotificationStore = create<NotificationState>()(
         })),
       clearAll: () => set({ notifications: [] }),
     }),
-    { name: 'admin-notifications' },
+    { name: STORE_KEY },
   ),
 );
+
+/** 다른 탭에서 localStorage가 변경되면 자동으로 상태를 동기화 */
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === STORE_KEY) {
+      useNotificationStore.persist.rehydrate();
+    }
+  });
+}

@@ -13,7 +13,7 @@ function ToastList() {
       <Toast.ViewportPrimitive className={styles.viewport}>
         {toasts.map((toast) => (
           <Toast.RootPrimitive key={toast.id} toast={toast}>
-            <Toast.ContentPrimitive>
+            <Toast.ContentPrimitive className={styles.content}>
               <div className={styles.body}>
                 <span className={styles.iconWrap}>
                   <Toast.IconPrimitive />
@@ -41,7 +41,7 @@ export interface AppToastProviderProps {
 
 export function AppToastProvider({ children }: AppToastProviderProps) {
   return (
-    <Toast.ProviderPrimitive>
+    <Toast.ProviderPrimitive timeout={7000}>
       {children}
       <ToastList />
     </Toast.ProviderPrimitive>

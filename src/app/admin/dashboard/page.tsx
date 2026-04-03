@@ -7,8 +7,10 @@ import {
   useAdminSummary,
   useAdminKanban,
   useAdminList,
+  useUpdateApplicationStatus,
 } from '@/features/applications/queries';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { useNotificationStore } from '@/stores/useNotificationStore';
 import styles from './Dashboard.module.css';
 
 // ── Helpers ──────────────────────────────────────────────
@@ -82,6 +84,8 @@ export default function AdminDashboardPage() {
     useAdminSummary(selectedMonth);
   const { data: kanban, isLoading: kanbanLoading } = useAdminKanban();
   const { data: list, isLoading: listLoading } = useAdminList({ limit: 10 });
+  const { mutate: updateStatus } = useUpdateApplicationStatus();
+  const { addNotification } = useNotificationStore();
 
   if (!accessToken) {
     return <div className={styles.fullCenter}>인증 중...</div>;
@@ -96,6 +100,13 @@ export default function AdminDashboardPage() {
 
   const leasingItems =
     kanban?.columns.find((c) => c.status === 'LEASING')?.items ?? [];
+
+  const urgentItems = (list?.items ?? [])
+    .filter((item) => item.status === 'RECEIVED' || item.status === 'REVIEWING')
+    .sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
 
   const totalCount = list?.meta.total ?? 0;
   function handleLogout() {
@@ -132,12 +143,12 @@ export default function AdminDashboardPage() {
               <Link href="/admin/dashboard" className={styles.navActive}>
                 대시보드
               </Link>
-              <Link href="/admin/applications" className={styles.navLink}>
+              <span className={styles.navLink}>
                 신청 목록
                 {totalCount > 0 && (
                   <span className={styles.navBadge}>{totalCount}</span>
                 )}
-              </Link>
+              </span>
             </nav>
           </div>
           <div className={styles.sidebarFooter}>
@@ -230,7 +241,7 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Middle: leasing table + urgent panel */}
-          <div>
+          <div className={styles.midGrid}>
             <section className={styles.card}>
               <div className={styles.cardHeader}>
                 <h2 className={styles.cardTitle}>임대 만료 임박</h2>
@@ -280,15 +291,77 @@ export default function AdminDashboardPage() {
                 </table>
               </div>
             </section>
+
+            <aside className={styles.urgentPanel}>
+              <div className={styles.urgentPanelHeader}>
+                <span className={styles.urgentPanelTitle}>즉시 처리 필요</span>
+                <span className={styles.urgentCount}>
+                  {summary?.overview.urgent.count ?? 0}건
+                </span>
+              </div>
+              <div className={styles.urgentList}>
+                {urgentItems.length === 0 ? (
+                  <p className={styles.urgentEmpty}>긴급 처리 건이 없습니다</p>
+                ) : (
+                  urgentItems.map((item) => {
+                    const days = calcDaysWaiting(item.createdAt);
+                    return (
+                      <div key={item.id} className={styles.urgentItem}>
+                        <div className={styles.urgentItemTop}>
+                          <div>
+                            <p className={styles.urgentName}>
+                              {item.applicant.name}
+                            </p>
+                            <p className={styles.urgentAddr}>
+                              {item.asset.address}
+                            </p>
+                          </div>
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                            }}
+                          >
+                            <span className={styles.urgentDays}>
+                              {days}일 대기
+                            </span>
+                            <button
+                              type="button"
+                              className={styles.processBtn}
+                              onClick={() => {
+                                updateStatus(
+                                  {
+                                    id: item.id,
+                                    status: 'REVIEWING',
+                                  },
+                                  {
+                                    onSuccess: () => {
+                                      addNotification(
+                                        item.id,
+                                        `${item.applicant.name}님의 ${item.asset.address}에 대해 관리자가 검토 중입니다.`,
+                                      );
+                                    },
+                                  },
+                                );
+                              }}
+                            >
+                              처리하기
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </aside>
           </div>
 
           {/* Recent list */}
           <section className={styles.card}>
             <div className={styles.cardHeader}>
               <h2 className={styles.cardTitle}>최근 신청 목록</h2>
-              <Link href="/admin/applications" className={styles.viewMoreLink}>
-                신청 목록 전체 보기 →
-              </Link>
             </div>
             <div className={styles.tableWrapper}>
               <table className={styles.table}>

@@ -5,8 +5,11 @@ import { LOOKUP_THUMBNAIL_PRELOADS } from '@/features/lookup/thumbnailAssets';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: '한집줄클',
-  description: '한집줄클 - 관리자 대시보드',
+  title: {
+    default: '한집줄클',
+    template: '%s | 한집줄클',
+  },
+  description: '제주 빈집 리모델링 신청 서비스',
   icons: {
     icon: '/images/home-type1-damBat.png',
   },

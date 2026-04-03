@@ -9,7 +9,7 @@
 .logoWrapper {
   display: flex;
   justify-content: center;
-  padding: 150px 0 82px;
+  padding: 100px 0 82px;
 }
 
 .title {
@@ -23,25 +23,44 @@
 }
 
 .illustration {
-  width: 130%;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--gap-md);
+  width: 100vw;
+  margin-left: calc(-1 * var(--screen-margin));
+  overflow: hidden;
   padding: var(--gap-lg) 0;
   padding-top: 0;
 }
 
+.illustrationTrack {
+  display: flex;
+  gap: var(--gap-md);
+  width: max-content;
+  animation: scroll 30s linear infinite;
+}
+
 .illustrationImage {
-  width: 100%;
-  max-width: 360px;
+  width: 190px;
   height: auto;
   object-fit: contain;
+  flex-shrink: 0;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .bottom {
+  position: fixed;
+  width: 100%;
+  left: 0;
+  bottom: 0;
   padding-bottom: 40px;
+  padding: 0 20px 60px;
+  background: white;
 }
 
 .heading {

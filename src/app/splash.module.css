@@ -7,7 +7,7 @@
 }
 
 .illustration {
-  width: 130%;
+  width: 100%;
   flex: 1;
   display: flex;
   align-items: center;
@@ -18,7 +18,7 @@
 
 .illustrationImage {
   width: 100%;
-  max-width: 360px;
+  max-width: 190px;
   height: auto;
   object-fit: contain;
 }

@@ -829,24 +829,6 @@ export default function ApplyStepPage() {
           >
             {content.description}
           </Text>
-          <div
-            style={{
-              padding: 'var(--gap-xs) var(--gap-md)',
-              borderRadius: 'var(--size-senior-radius)',
-              background: 'var(--color-bg-canvas-sub)',
-              marginBottom: 'var(--gap-2xl)',
-            }}
-          >
-            <Text
-              typography="body3"
-              style={{
-                color: 'var(--color-fg-placeholder)',
-                textAlign: 'center',
-              }}
-            >
-              신청 처리까지 영업일 기준 3-5일 소요될 수 있습니다
-            </Text>
-          </div>
 
           <Link
             href="/lookup/history"
