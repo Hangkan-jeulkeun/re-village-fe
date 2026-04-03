@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { HStack, Text, Toast } from '@vapor-ui/core';
 import { AttachFileOutlineIcon, CameraIcon } from '@vapor-ui/icons';
 import Input from '@/components/common/inputs/Input';
+import { HouseLoader } from '@/components/common/HouseLoader';
 import { useExtractDocuments } from '@/features/applications/queries';
 import { useApplyStore } from '@/stores/useApplyStore';
 import { compressImageToMaxSize } from '@/utils/compressImageToMaxSize';
@@ -158,7 +159,7 @@ export default function ApplyStepPage() {
           toastManager.add({
             title: '사진 용량을 자동으로 조절했어요',
             description: `${file.name} 파일을 업로드 가능한 크기로 줄였습니다.`,
-            colorPalette: 'primary',
+            colorPalette: 'info',
           });
         }
 
@@ -413,6 +414,8 @@ export default function ApplyStepPage() {
           </div>
         </section>
       ) : null}
+
+      {isExtracting ? <HouseLoader label="서류 분석 중..." /> : null}
 
       {/* Step 3 – 관련 서류 */}
       {step === 3 ? (
