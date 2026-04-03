@@ -3,11 +3,14 @@ import { Box, Text } from '@vapor-ui/core';
 import AppLayout from '@/components/layout/AppLayout';
 import { LookupHistoryList } from '@/features/lookup/LookupHistoryList';
 import { LookupHistoryLogger } from '@/features/lookup/LookupHistoryLogger';
+
 import {
   LookupPageShell,
   LookupTopBar,
   type LookupTabItem,
 } from './LookupTopBar';
+
+import { AdminNotificationBanner } from '@/components/common/AdminNotificationBanner';
 
 type TabKey = 'in-progress' | 'done';
 
@@ -35,6 +38,7 @@ export default async function LookupHistoryPage({
     >
       <LookupPageShell>
         <LookupHistoryLogger />
+        <AdminNotificationBanner />
 
         <LookupTopBar
           title="신청 내역 확인하기"

@@ -4,23 +4,6 @@
  */
 
 export interface paths {
-  '/api/v1/auth/login': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** 로그인 */
-    post: operations['AuthController_login'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   '/api/v1/auth/refresh': {
     parameters: {
       query?: never;
@@ -174,23 +157,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/api/v1/applications/lookup/verify': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** 인증번호 검증 후 토큰 발급 + 신청내역 조회 */
-    post: operations['ApplicationsController_verifyAndLookup'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   '/api/v1/applications/{id}/cancel': {
     parameters: {
       query?: never;
@@ -249,7 +215,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** 관리자 칸반 보드 조회 */
+    /** 관리자 칸반 보드 조회 (파라미터 없음) */
     get: operations['ApplicationsController_adminKanban'];
     put?: never;
     post?: never;
@@ -331,12 +297,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
-    LoginDto: {
-      /** @example youth@example.com */
-      email: string;
-      /** @example StrongPass123! */
-      password: string;
-    };
     AutofillHouseDto: {
       /** @example 제주특별자치도 제주시 한림읍 ... */
       address?: string;
@@ -345,7 +305,7 @@ export interface components {
       /** @example 126.5312 */
       longitude?: number;
       /**
-       * @example EMPTY_HOUSE
+       * @example STONE_WALL_HOUSE
        * @enum {string}
        */
       assetType?:
@@ -354,11 +314,7 @@ export interface components {
         | 'DEMOLITION_HOUSE'
         | 'NO_STONE_WALL_HOUSE'
         | 'D_SHAPED_HOUSE'
-        | 'URBAN_HOUSE_VILLA'
-        | 'EMPTY_HOUSE'
-        | 'WAREHOUSE'
-        | 'FIELD'
-        | 'OTHER';
+        | 'URBAN_HOUSE_VILLA';
       /** @example 72 */
       areaSqm?: number;
       /**
@@ -431,28 +387,6 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  AuthController_login: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['LoginDto'];
-      };
-    };
-    responses: {
-      /** @description 로그인 성공 (JWT 토큰 반환) */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
   AuthController_refresh: {
     parameters: {
       query?: never;
@@ -509,7 +443,7 @@ export interface operations {
           email?: string;
           /** @example 제주특별자치도 서귀포시 천지동 */
           address?: string;
-          /** @example EMPTY_HOUSE */
+          /** @example STONE_WALL_HOUSE */
           assetType?: string;
           /** @example 72 */
           areaSqm?: number;
@@ -523,7 +457,7 @@ export interface operations {
           notes?: string;
           /**
            * @description 선택. multipart에서 JSON 문자열로 전달 가능. payload와 개별 필드가 겹치면 개별 필드 우선
-           * @example {"address":"제주특별자치도 서귀포시 천지동","assetType":"EMPTY_HOUSE"}
+           * @example {"address":"제주특별자치도 서귀포시 천지동","assetType":"STONE_WALL_HOUSE"}
            */
           payload?: string;
           photos?: string[];
@@ -534,7 +468,7 @@ export interface operations {
           email?: string;
           /** @example 제주특별자치도 서귀포시 천지동 */
           address?: string;
-          /** @example EMPTY_HOUSE */
+          /** @example STONE_WALL_HOUSE */
           assetType?: string;
           /** @example 72 */
           areaSqm?: number;
@@ -548,7 +482,7 @@ export interface operations {
           notes?: string;
           /**
            * @description 선택. multipart에서 JSON 문자열로 전달 가능. payload와 개별 필드가 겹치면 개별 필드 우선
-           * @example {"address":"제주특별자치도 서귀포시 천지동","assetType":"EMPTY_HOUSE"}
+           * @example {"address":"제주특별자치도 서귀포시 천지동","assetType":"STONE_WALL_HOUSE"}
            */
           payload?: string;
           photos?: string[];
@@ -691,27 +625,6 @@ export interface operations {
       };
     };
   };
-  ApplicationsController_verifyAndLookup: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['VerifyCodeDto'];
-      };
-    };
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
   ApplicationsController_cancelMyApplication: {
     parameters: {
       query?: never;
@@ -782,9 +695,7 @@ export interface operations {
   };
   ApplicationsController_adminKanban: {
     parameters: {
-      query?: {
-        search?: string;
-      };
+      query?: never;
       header?: never;
       path?: never;
       cookie?: never;
@@ -823,6 +734,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
+        /** @description 신청서 ID (application.id) 또는 자산 ID (asset.id) */
         id: string;
       };
       cookie?: never;
@@ -837,7 +749,12 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': {
+            success: boolean;
+            message: string;
+          };
+        };
       };
     };
   };

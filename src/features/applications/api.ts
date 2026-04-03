@@ -25,6 +25,177 @@ export type VerifyLookupRequest = components['schemas']['VerifyCodeDto'];
 export type UpdateApplicationStatusRequest =
   components['schemas']['UpdateStatusDto'];
 
+// Admin API response types
+export interface AdminSummaryStatusCount {
+  status:
+    | 'RECEIVED'
+    | 'REVIEWING'
+    | 'REMODELING'
+    | 'LEASING'
+    | 'COMPLETED'
+    | 'REJECTED';
+  label: string;
+  count: number;
+}
+
+export interface AdminSummaryResponse {
+  month: string;
+  total: number;
+  statusCounts: AdminSummaryStatusCount[];
+  overview: {
+    urgent: {
+      title: string;
+      badge: string;
+      count: number;
+      condition: string;
+    };
+    newThisMonth: {
+      title: string;
+      count: number;
+      changeFromPreviousMonth: number;
+    };
+    inProgress: {
+      title: string;
+      count: number;
+      remodelingCount: number;
+      leasingCount: number;
+    };
+    processingDays: {
+      title: string;
+      days: number;
+      remodelingCount: number;
+      leasingCount: number;
+    };
+  };
+}
+
+export interface AdminKanbanItem {
+  id: string;
+  applicantId: string;
+  assetId: string;
+  businessIdea: string;
+  businessType: string;
+  desiredStartDate: string;
+  residentAgeGroup: string | null;
+  leasePurpose: string | null;
+  occupantCount: number | null;
+  remodelSummary: string | null;
+  managerContact: string | null;
+  status:
+    | 'RECEIVED'
+    | 'REVIEWING'
+    | 'REMODELING'
+    | 'LEASING'
+    | 'COMPLETED'
+    | 'REJECTED';
+  rejectReason: string | null;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  applicant: {
+    id: string;
+    name: string;
+    phone: string;
+    email: string;
+  };
+  asset: {
+    id: string;
+    address: string;
+    assetType: string;
+  };
+}
+
+export interface AdminKanbanColumn {
+  status:
+    | 'RECEIVED'
+    | 'REVIEWING'
+    | 'REMODELING'
+    | 'LEASING'
+    | 'COMPLETED'
+    | 'REJECTED';
+  label: string;
+  count: number;
+  items: AdminKanbanItem[];
+}
+
+export interface AdminKanbanResponse {
+  month: string;
+  total: number;
+  overview: {
+    urgent: {
+      title: string;
+      badge: string;
+      count: number;
+      condition: string;
+    };
+    newThisMonth: {
+      title: string;
+      count: number;
+      changeFromPreviousMonth: number;
+    };
+    inProgress: {
+      title: string;
+      count: number;
+      remodelingCount: number;
+      leasingCount: number;
+    };
+    processingDays: {
+      title: string;
+      days: number;
+      remodelingCount: number;
+      leasingCount: number;
+    };
+  };
+  columns: AdminKanbanColumn[];
+}
+
+export interface AdminListItem {
+  id: string;
+  applicantId: string;
+  assetId: string;
+  businessIdea: string;
+  businessType: string;
+  desiredStartDate: string;
+  residentAgeGroup: string | null;
+  leasePurpose: string | null;
+  occupantCount: number | null;
+  remodelSummary: string | null;
+  managerContact: string | null;
+  status:
+    | 'RECEIVED'
+    | 'REVIEWING'
+    | 'REMODELING'
+    | 'LEASING'
+    | 'COMPLETED'
+    | 'REJECTED';
+  rejectReason: string | null;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  applicant: {
+    id: string;
+    name: string;
+    phone: string;
+    email: string;
+  };
+  asset: {
+    id: string;
+    address: string;
+    assetType: string;
+    areaSqm: number;
+  };
+  statusLabel: string;
+}
+
+export interface AdminListResponse {
+  items: AdminListItem[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+  };
+}
+
 export interface ExtractDocumentsResponse {
   buildingType?: string;
   address?: string;
@@ -77,20 +248,51 @@ export const applicationsApi = {
       params: { path: { id } },
     }),
 
-  adminSummary: (month?: string) =>
-    apiClient.GET('/api/v1/applications/admin/summary', {
-      params: { query: { month } },
-    }),
+  // openapi.json에 응답 body 스키마가 없어 apiClient 타입 추론 불가 — apiFetch 직접 사용
+  adminSummary: async (month?: string): Promise<AdminSummaryResponse> => {
+    const qs = month ? `?month=${encodeURIComponent(month)}` : '';
+    const res = await apiFetch(`/api/v1/applications/admin/summary${qs}`, {
+      method: 'GET',
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: res.statusText }));
+      throw err;
+    }
+    const json = (await res.json()) as { data: AdminSummaryResponse };
+    return json.data;
+  },
 
-  adminList: (params?: AdminListParams) =>
-    apiClient.GET('/api/v1/applications/admin/list', {
-      params: { query: params },
-    }),
+  adminList: async (params?: AdminListParams): Promise<AdminListResponse> => {
+    const qs = params
+      ? new URLSearchParams(
+          Object.entries(params)
+            .filter(([, v]) => v !== undefined)
+            .map(([k, v]) => [k, String(v)]),
+        ).toString()
+      : '';
+    const res = await apiFetch(
+      `/api/v1/applications/admin/list${qs ? `?${qs}` : ''}`,
+      { method: 'GET' },
+    );
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: res.statusText }));
+      throw err;
+    }
+    const json = (await res.json()) as { data: AdminListResponse };
+    return json.data;
+  },
 
-  adminKanban: (search?: string) =>
-    apiClient.GET('/api/v1/applications/admin/kanban', {
-      params: { query: { search } },
-    }),
+  adminKanban: async (): Promise<AdminKanbanResponse> => {
+    const res = await apiFetch('/api/v1/applications/admin/kanban', {
+      method: 'GET',
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: res.statusText }));
+      throw err;
+    }
+    const json = (await res.json()) as { data: AdminKanbanResponse };
+    return json.data;
+  },
 
   adminDetail: (id: string) =>
     apiClient.GET('/api/v1/applications/admin/{id}', {

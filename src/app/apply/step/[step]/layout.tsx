@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { Text, Toast } from '@vapor-ui/core';
-import { WarningIcon } from '@vapor-ui/icons';
+import { WarningIcon, CloseOutlineIcon } from '@vapor-ui/icons';
 import AppLayout from '@/components/layout/AppLayout';
 import Button, { ButtonPair } from '@/components/common/base/Button';
 import {
@@ -149,7 +149,7 @@ export default function StepLayout({ children }: StepLayoutProps) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '16px 20px 12px',
+              padding: '20px 15px',
               position: 'relative',
             }}
           >
@@ -161,14 +161,15 @@ export default function StepLayout({ children }: StepLayoutProps) {
                 left: '20px',
                 border: 0,
                 background: 'transparent',
-                fontSize: '22px',
                 cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
                 color: 'var(--color-fg-subtle)',
                 lineHeight: 1,
               }}
               onClick={() => router.push('/apply/landing')}
             >
-              ✕
+              <CloseOutlineIcon size={22} />
             </button>
             <Text typography="body1" style={{ fontWeight: 700 }}>
               빈집 서비스 신청하기

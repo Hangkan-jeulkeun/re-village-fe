@@ -1,25 +1,16 @@
 'use client';
 
+import Image from 'next/image';
 import { useParams, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { ComponentType, SVGProps } from 'react';
 import { Text, Toast } from '@vapor-ui/core';
-import {
-  CameraIcon,
-  EditOutlineIcon,
-  CameraOutlineIcon,
-  DocumentViewerOutlineIcon,
-  SearchOutlineIcon,
-} from '@vapor-ui/icons';
-import Button from '@/components/common/base/Button';
+import { CameraIcon } from '@vapor-ui/icons';
 import Input from '@/components/common/inputs/Input';
 import Select from '@/components/common/inputs/Select';
 import { useExtractDocuments } from '@/features/applications/queries';
 import { useApplyStore } from '@/stores/useApplyStore';
 import { formatPhoneNumber } from '@/utils/formatPhoneNumber';
-
-type StepIconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 
 const TOTAL_STEPS = 5;
 
@@ -46,20 +37,35 @@ const STEP_CONTENT = [
   },
 ] as const;
 
-const STEP_ICONS: Array<StepIconComponent | null> = [
-  EditOutlineIcon,
-  CameraOutlineIcon,
-  DocumentViewerOutlineIcon,
-  SearchOutlineIcon,
-  null,
-];
-
-/* 토큰 없는 주황 accent는 그대로, 파란 accent는 brand-interactive 참조 */
-const STEP_ICON_COLORS = [
-  '#e07020',
-  'var(--color-brand-interactive)',
-  '#e07020',
-  'var(--color-brand-interactive)',
+const STEP_ICONS = [
+  <Image
+    key="step1"
+    width={62}
+    height={62}
+    src="/icons/apply-step1-write.svg"
+    alt="기본 정보 입력 아이콘"
+  />,
+  <Image
+    key="step2"
+    width={62}
+    height={62}
+    src="/icons/apply-step2-camera.svg"
+    alt="건물 사진 업로드 아이콘"
+  />,
+  <Image
+    key="step3"
+    width={62}
+    height={62}
+    src="/icons/apply-step3-file.svg"
+    alt="관련 서류 첨부 아이콘"
+  />,
+  <Image
+    key="step4"
+    width={62}
+    height={62}
+    src="/icons/apply-step4-check.svg"
+    alt="신청 내용 확인 아이콘"
+  />,
   null,
 ];
 
@@ -109,7 +115,6 @@ export default function ApplyStepPage() {
   const content = STEP_CONTENT[step - 1];
   const isComplete = step === TOTAL_STEPS;
   const StepIcon = STEP_ICONS[step - 1] ?? null;
-  const stepIconColor = STEP_ICON_COLORS[step - 1] ?? undefined;
 
   const MAX_PHOTO_SIZE_BYTES = 10 * 1024 * 1024;
   const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png'];
@@ -206,18 +211,13 @@ export default function ApplyStepPage() {
               {content.description}
             </Text>
           </div>
-          {StepIcon ? (
-            <StepIcon
-              aria-hidden="true"
-              style={{
-                width: '64px',
-                height: '64px',
-                color: stepIconColor,
-                flexShrink: 0,
-                marginLeft: 'var(--gap-sm)',
-              }}
-            />
-          ) : null}
+          <div
+            style={{
+              alignSelf: 'end',
+            }}
+          >
+            {StepIcon}
+          </div>
         </section>
       ) : null}
 
@@ -599,23 +599,13 @@ export default function ApplyStepPage() {
             padding: '0 var(--gap-xs)',
           }}
         >
-          <div
-            aria-hidden="true"
-            style={{
-              width: '160px',
-              height: '160px',
-              borderRadius: '50%',
-              background: 'var(--color-bg-canvas-sub)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '72px',
-              marginBottom: 'var(--gap-xl)',
-            }}
-          >
-            🏡
-          </div>
-
+          <Image
+            style={{ width: '160px', height: '160px', paddingBottom: '24px' }}
+            src="/images/home-type1-damBat.png"
+            alt="신청 완료 일러스트"
+            width={160}
+            height={160}
+          />
           <Text
             typography="heading2"
             style={{
