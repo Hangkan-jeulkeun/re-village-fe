@@ -71,8 +71,9 @@
 }
 
 .subtitle {
-  font-size: 16px;
-  color: var(--color-fg-subtle);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--color-fg-placeholder);
   margin-bottom: var(--gap-lg);
 }
 

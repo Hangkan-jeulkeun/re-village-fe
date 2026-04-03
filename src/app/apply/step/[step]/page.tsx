@@ -106,7 +106,7 @@ export default function ApplyStepPage() {
   const [attachedDocuments, setAttachedDocuments] = useState<File[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const justDroppedRef = useRef(false);
-  const showExtractingLoader = useDelayedLoading(isExtracting, 0, 2800);
+  const extractingLoader = useDelayedLoading(isExtracting, 0, 2800);
 
   useEffect(() => {
     return () => {
@@ -417,7 +417,9 @@ export default function ApplyStepPage() {
         </section>
       ) : null}
 
-      {showExtractingLoader ? <HouseLoader label="서류 분석 중..." /> : null}
+      {extractingLoader.visible ? (
+        <HouseLoader label="서류 분석 중..." active={extractingLoader.active} />
+      ) : null}
 
       {/* Step 3 – 관련 서류 */}
       {step === 3 ? (

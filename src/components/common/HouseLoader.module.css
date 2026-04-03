@@ -6,10 +6,22 @@
   align-items: center;
   justify-content: center;
   gap: var(--gap-md);
-  background: rgb(17 25 40 / 0.65);
-  backdrop-filter: blur(6px);
+  background: rgb(255 255 255 / 0.78);
+  backdrop-filter: blur(10px);
   z-index: 9999;
-  animation: fadeIn var(--duration-fast) var(--ease-out);
+  opacity: 1;
+  transition:
+    opacity 320ms var(--ease-out),
+    backdrop-filter 320ms var(--ease-out),
+    background-color 320ms var(--ease-out);
+}
+
+.enter {
+  opacity: 1;
+}
+
+.exit {
+  opacity: 0;
 }
 
 .row {
@@ -21,17 +33,17 @@
 .house {
   animation: housePulse 2.1s ease-in-out infinite;
   transform-origin: center bottom;
-  filter: brightness(0.85);
+  filter: brightness(0.96);
 }
 
 @keyframes housePulse {
   0%,
   100% {
     transform: scale(1);
-    filter: brightness(0.85);
+    filter: brightness(0.96);
   }
   50% {
     transform: scale(1.4);
-    filter: brightness(1.05);
+    filter: brightness(1.08);
   }
 }

@@ -2,17 +2,25 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+interface DelayedLoadingState {
+  visible: boolean;
+  active: boolean;
+}
+
 export function useDelayedLoading(
   isLoading: boolean,
   delayMs = 1000,
   minimumVisibleMs = 0,
-): boolean {
-  const [showDelayedLoader, setShowDelayedLoader] = useState(false);
+  fadeOutMs = 320,
+): DelayedLoadingState {
+  const [visible, setVisible] = useState(false);
+  const [active, setActive] = useState(false);
   const shownAtRef = useRef<number | null>(null);
+  const hideTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!isLoading) {
-      if (!showDelayedLoader) {
+      if (!visible) {
         return;
       }
 
@@ -20,29 +28,42 @@ export function useDelayedLoading(
       const elapsed = shownAt ? Date.now() - shownAt : minimumVisibleMs;
       const remaining = Math.max(0, minimumVisibleMs - elapsed);
 
-      const timeoutId = window.setTimeout(() => {
-        setShowDelayedLoader(false);
-        shownAtRef.current = null;
+      const fadeTimeoutId = window.setTimeout(() => {
+        setActive(false);
+        hideTimeoutRef.current = window.setTimeout(() => {
+          setVisible(false);
+          shownAtRef.current = null;
+          hideTimeoutRef.current = null;
+        }, fadeOutMs);
       }, remaining);
 
       return () => {
-        window.clearTimeout(timeoutId);
+        window.clearTimeout(fadeTimeoutId);
+        if (hideTimeoutRef.current !== null) {
+          window.clearTimeout(hideTimeoutRef.current);
+        }
       };
     }
 
-    if (showDelayedLoader) {
-      return;
+    if (visible) {
+      if (hideTimeoutRef.current !== null) {
+        window.clearTimeout(hideTimeoutRef.current);
+        hideTimeoutRef.current = null;
+      }
+      const reactivateId = window.setTimeout(() => setActive(true), 0);
+      return () => window.clearTimeout(reactivateId);
     }
 
     const timeoutId = window.setTimeout(() => {
       shownAtRef.current = Date.now();
-      setShowDelayedLoader(true);
+      setVisible(true);
+      setActive(true);
     }, delayMs);
 
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [delayMs, isLoading, minimumVisibleMs, showDelayedLoader]);
+  }, [active, delayMs, fadeOutMs, isLoading, minimumVisibleMs, visible]);
 
-  return showDelayedLoader;
+  return { visible, active };
 }

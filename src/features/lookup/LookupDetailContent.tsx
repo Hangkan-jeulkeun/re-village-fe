@@ -186,7 +186,7 @@ export function LookupDetailContent({
   activeTab: DetailTab;
 }) {
   const { data, isPending, isError } = useMyApplicationDetail(applicationId);
-  const showLongLoader = useDelayedLoading(isPending, 0, 2800);
+  const longLoader = useDelayedLoading(isPending, 0, 2800);
   const detail = parseDetailApplication(data);
 
   if (!applicationId) {
@@ -200,7 +200,11 @@ export function LookupDetailContent({
   }
 
   if (isPending) {
-    return showLongLoader ? <HouseLoader /> : <PageLoader />;
+    return longLoader.visible ? (
+      <HouseLoader active={longLoader.active} />
+    ) : (
+      <PageLoader />
+    );
   }
 
   if (isError || !detail) {

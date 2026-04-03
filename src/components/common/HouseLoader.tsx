@@ -11,13 +11,19 @@ const HOUSES = [
 
 interface HouseLoaderProps {
   label?: string;
+  active?: boolean;
 }
 
 export function HouseLoader({
   label = '잠시만 기다려 주세요',
+  active = true,
 }: HouseLoaderProps) {
   return (
-    <div className={styles.overlay} role="status" aria-label={label}>
+    <div
+      className={`${styles.overlay} ${active ? styles.enter : styles.exit}`}
+      role="status"
+      aria-label={label}
+    >
       <div className={styles.row}>
         {HOUSES.map((house, index) => (
           <Image
@@ -33,7 +39,7 @@ export function HouseLoader({
       </div>
       <Text
         typography="body2"
-        style={{ color: 'rgb(255 255 255 / 0.75)', fontWeight: 500 }}
+        style={{ color: 'rgb(55 65 81 / 0.82)', fontWeight: 600 }}
       >
         {label}
       </Text>

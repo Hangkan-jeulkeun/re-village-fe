@@ -36,8 +36,9 @@ export default function ApplyLandingPage() {
       </div>
 
       <div className={styles.bottom}>
-        <p className={styles.heading}>시작하기</p>
-        <p className={styles.subtitle}>빈집 애물단지를, 미래 신줏단지로</p>
+        <p className={styles.subtitle} style={{ textAlign: 'center' }}>
+          빈집 애물단지를, 미래 신줏단지로
+        </p>
 
         <Link href="/apply/step/1" className={styles.primaryBtn}>
           빈집 수리 신청하기

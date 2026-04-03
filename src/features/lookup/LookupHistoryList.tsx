@@ -163,7 +163,7 @@ export function LookupHistoryList() {
   const searchParams = useSearchParams();
   const activeTab = searchParams.get('tab') === 'done' ? 'done' : 'in-progress';
   const { data: rawData, isPending, refetch } = useMyApplications();
-  const showLongLoader = useDelayedLoading(isPending, 0, 2800);
+  const longLoader = useDelayedLoading(isPending, 0, 2800);
 
   useEffect(() => {
     void refetch();
@@ -177,7 +177,11 @@ export function LookupHistoryList() {
   );
 
   if (isPending) {
-    return showLongLoader ? <HouseLoader /> : <PageLoader />;
+    return longLoader.visible ? (
+      <HouseLoader active={longLoader.active} />
+    ) : (
+      <PageLoader />
+    );
   }
 
   if (items.length === 0) {
