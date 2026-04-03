@@ -188,9 +188,11 @@ export default function StepLayout({ children }: StepLayoutProps) {
                   height: '4px',
                   borderRadius: '2px',
                   background:
-                    step >= seg
+                    step === seg
                       ? 'var(--color-brand-interactive)'
-                      : 'var(--color-border-normal)',
+                      : step > seg
+                        ? 'color-mix(in srgb, var(--color-brand-interactive) 35%, var(--color-bg-canvas))'
+                        : 'var(--color-border-normal)',
                   transition: 'background 0.2s ease',
                 }}
               />

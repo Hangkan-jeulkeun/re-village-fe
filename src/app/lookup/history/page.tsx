@@ -1,8 +1,8 @@
-import Link from 'next/link';
-import { Box, Text } from '@vapor-ui/core';
+import { Box } from '@vapor-ui/core';
 import AppLayout from '@/components/layout/AppLayout';
 import { LookupHistoryList } from '@/features/lookup/LookupHistoryList';
 import { LookupHistoryLogger } from '@/features/lookup/LookupHistoryLogger';
+import { NewApplicationButton } from '@/features/lookup/NewApplicationButton';
 
 import {
   LookupPageShell,
@@ -63,25 +63,7 @@ export default async function LookupHistoryPage({
             zIndex: 9999,
           }}
         >
-          <Link
-            href="/apply/landing"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '100%',
-              height: 'calc(var(--size-500) + var(--size-300))',
-              borderRadius: 'var(--size-space-200)',
-              background: 'var(--color-brand-interactive)',
-            }}
-          >
-            <Text
-              typography="heading3"
-              style={{ color: 'var(--color-fg-inverse)' }}
-            >
-              새로 신청하기
-            </Text>
-          </Link>
+          <NewApplicationButton />
         </Box>
       </LookupPageShell>
     </AppLayout>
