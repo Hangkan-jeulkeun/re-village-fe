@@ -13,6 +13,10 @@ import { compressImageToMaxSize } from '@/utils/compressImageToMaxSize';
 import { formatPhoneNumber } from '@/utils/formatPhoneNumber';
 
 const TOTAL_STEPS = 5;
+const ANALYSIS_LABEL_STYLE = {
+  color: 'var(--color-fg-subtle)',
+  fontWeight: 600,
+} as const;
 
 const STEP_CONTENT = [
   {
@@ -626,33 +630,63 @@ export default function ApplyStepPage() {
             )}
           </div>
 
-          <Input
-            id="buildingType"
-            label="건물 종류"
-            placeholder={isExtracting ? '분석 중...' : '서류 첨부 후 자동 입력'}
-            value={buildingType}
-            readOnly
-            onChange={(e) => setBuildingType(e.target.value)}
-          />
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--gap-md)',
+              marginTop: 'var(--gap-xl)',
+              paddingTop: 'var(--gap-lg)',
+              borderTop: '1px solid var(--color-border-normal)',
+            }}
+          >
+            <Text
+              typography="body1"
+              style={{
+                color: 'var(--color-fg-subtle)',
+                fontWeight: 700,
+              }}
+            >
+              서류 분석 결과
+            </Text>
 
-          <Input
-            id="address"
-            label="주소"
-            placeholder={isExtracting ? '분석 중...' : '서류 첨부 후 자동 입력'}
-            value={address}
-            readOnly
-            onChange={(e) => setAddress(e.target.value)}
-          />
+            <Input
+              id="buildingType"
+              label="건물 종류"
+              labelTextStyle={ANALYSIS_LABEL_STYLE}
+              placeholder={
+                isExtracting ? '분석 중...' : '서류 첨부 후 자동 입력'
+              }
+              value={buildingType}
+              readOnly
+              onChange={(e) => setBuildingType(e.target.value)}
+            />
 
-          <Input
-            id="area"
-            label="면적 (m²)"
-            inputMode="decimal"
-            placeholder={isExtracting ? '분석 중...' : '서류 첨부 후 자동 입력'}
-            value={area}
-            readOnly
-            onChange={(e) => setArea(e.target.value)}
-          />
+            <Input
+              id="address"
+              label="주소"
+              labelTextStyle={ANALYSIS_LABEL_STYLE}
+              placeholder={
+                isExtracting ? '분석 중...' : '서류 첨부 후 자동 입력'
+              }
+              value={address}
+              readOnly
+              onChange={(e) => setAddress(e.target.value)}
+            />
+
+            <Input
+              id="area"
+              label="면적 (m²)"
+              labelTextStyle={ANALYSIS_LABEL_STYLE}
+              inputMode="decimal"
+              placeholder={
+                isExtracting ? '분석 중...' : '서류 첨부 후 자동 입력'
+              }
+              value={area}
+              readOnly
+              onChange={(e) => setArea(e.target.value)}
+            />
+          </div>
         </section>
       ) : null}
 

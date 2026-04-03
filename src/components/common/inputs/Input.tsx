@@ -1,4 +1,4 @@
-import type { ComponentPropsWithoutRef, ReactNode } from 'react';
+import type { ComponentPropsWithoutRef, CSSProperties, ReactNode } from 'react';
 import { Box, Field, Text, TextInput, VStack } from '@vapor-ui/core';
 
 type FieldRootProps = ComponentPropsWithoutRef<typeof Field.Root>;
@@ -23,6 +23,7 @@ export interface InputProps
   inputClassName?: string;
   labelProps?: Omit<FieldLabelProps, 'children' | 'className'>;
   descriptionProps?: Omit<FieldDescriptionProps, 'children' | 'className'>;
+  labelTextStyle?: CSSProperties;
 }
 
 export default function Input({
@@ -39,6 +40,7 @@ export default function Input({
   inputClassName,
   labelProps,
   descriptionProps,
+  labelTextStyle,
   required,
   name,
   validationMode,
@@ -92,6 +94,7 @@ export default function Input({
                 color: 'var(--color-fg-normal)',
                 fontWeight: 700,
                 lineHeight: 1.4,
+                ...labelTextStyle,
               }}
             >
               {label}
