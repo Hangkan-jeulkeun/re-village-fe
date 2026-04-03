@@ -108,7 +108,7 @@ export function LookupTopBar({
             height: '2px',
             background: 'var(--color-border-primary)',
             transform: `translateX(${activeIndex * 100}%)`,
-            transition: 'transform var(--duration-normal) var(--ease-spring)',
+            transition: 'transform var(--duration-normal) var(--ease-out)',
           }}
         />
         {tabs.map((tab) => {
