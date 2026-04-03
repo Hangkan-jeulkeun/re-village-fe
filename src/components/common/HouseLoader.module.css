@@ -19,7 +19,7 @@
 }
 
 .house {
-  animation: housePulse 1.6s ease-in-out infinite;
+  animation: housePulse 2.1s ease-in-out infinite;
   transform-origin: center bottom;
   filter: brightness(0.85);
 }

@@ -27,7 +27,7 @@ export function HouseLoader({
             width={72}
             height={64}
             className={styles.house}
-            style={{ animationDelay: `${index * 0.4}s` }}
+            style={{ animationDelay: `${index * 0.55}s` }}
           />
         ))}
       </div>

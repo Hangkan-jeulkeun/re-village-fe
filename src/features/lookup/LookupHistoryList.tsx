@@ -9,7 +9,9 @@ import { Box, Button, HStack, Text, VStack } from '@vapor-ui/core';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { ConfirmAlert } from '@/components/common/ConfirmAlert';
+import { HouseLoader } from '@/components/common/HouseLoader';
 import { PageLoader } from '@/components/common/PageLoader';
+import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useTopToastStore } from '@/stores/useTopToastStore';
 
 import { ApplicationStepLine } from './ApplicationStepLine';
@@ -161,6 +163,7 @@ export function LookupHistoryList() {
   const searchParams = useSearchParams();
   const activeTab = searchParams.get('tab') === 'done' ? 'done' : 'in-progress';
   const { data: rawData, isPending, refetch } = useMyApplications();
+  const showLongLoader = useDelayedLoading(isPending, 0, 2800);
 
   useEffect(() => {
     void refetch();
@@ -174,7 +177,7 @@ export function LookupHistoryList() {
   );
 
   if (isPending) {
-    return <PageLoader />;
+    return showLongLoader ? <HouseLoader /> : <PageLoader />;
   }
 
   if (items.length === 0) {

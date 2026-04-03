@@ -9,6 +9,7 @@ import { AttachFileOutlineIcon, CameraIcon } from '@vapor-ui/icons';
 import Input from '@/components/common/inputs/Input';
 import { HouseLoader } from '@/components/common/HouseLoader';
 import { useExtractDocuments } from '@/features/applications/queries';
+import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useApplyStore } from '@/stores/useApplyStore';
 import { compressImageToMaxSize } from '@/utils/compressImageToMaxSize';
 import { formatPhoneNumber } from '@/utils/formatPhoneNumber';
@@ -105,6 +106,7 @@ export default function ApplyStepPage() {
   const [attachedDocuments, setAttachedDocuments] = useState<File[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const justDroppedRef = useRef(false);
+  const showExtractingLoader = useDelayedLoading(isExtracting, 0, 2800);
 
   useEffect(() => {
     return () => {
@@ -415,7 +417,7 @@ export default function ApplyStepPage() {
         </section>
       ) : null}
 
-      {isExtracting ? <HouseLoader label="서류 분석 중..." /> : null}
+      {showExtractingLoader ? <HouseLoader label="서류 분석 중..." /> : null}
 
       {/* Step 3 – 관련 서류 */}
       {step === 3 ? (

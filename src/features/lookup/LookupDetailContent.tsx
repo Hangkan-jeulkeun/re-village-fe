@@ -4,7 +4,9 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Box, HStack, Text, VStack } from '@vapor-ui/core';
 
+import { HouseLoader } from '@/components/common/HouseLoader';
 import { PageLoader } from '@/components/common/PageLoader';
+import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 
 import { ApplicationStepLine } from './ApplicationStepLine';
 import { useMyApplicationDetail } from './queries';
@@ -184,6 +186,7 @@ export function LookupDetailContent({
   activeTab: DetailTab;
 }) {
   const { data, isPending, isError } = useMyApplicationDetail(applicationId);
+  const showLongLoader = useDelayedLoading(isPending, 0, 2800);
   const detail = parseDetailApplication(data);
 
   if (!applicationId) {
@@ -197,7 +200,7 @@ export function LookupDetailContent({
   }
 
   if (isPending) {
-    return <PageLoader />;
+    return showLongLoader ? <HouseLoader /> : <PageLoader />;
   }
 
   if (isError || !detail) {
