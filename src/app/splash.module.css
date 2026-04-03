@@ -1,0 +1,62 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--color-bg-canvas);
+  padding: 0 var(--screen-margin);
+}
+
+.illustration {
+  width: 130%;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--gap-md);
+  padding: var(--gap-lg) 0;
+}
+
+.illustrationImage {
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  object-fit: contain;
+}
+
+.bottom {
+  padding-bottom: 40px;
+}
+
+.heading {
+  font-size: var(--size-senior-title);
+  font-weight: 700;
+  color: var(--color-fg-normal);
+  margin-bottom: var(--gap-xs);
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--color-fg-subtle);
+  margin-bottom: var(--gap-lg);
+}
+
+.progressWrap {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-bg-primary-100);
+  overflow: hidden;
+  margin-bottom: var(--gap-md);
+}
+
+.progressBar {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-brand-interactive);
+  transition: width 0.07s linear;
+}
+
+.caption {
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-fg-subtle);
+}
