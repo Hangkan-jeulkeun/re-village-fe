@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import { Box, HStack, Text, VStack } from '@vapor-ui/core';
 
@@ -29,7 +30,7 @@ interface DetailApplication {
   address?: string;
   areaSqm?: number;
   assetType: LookupAssetType;
-  thumbnailUrl?: string | null;
+  imageUrls: string[];
   appliedAt?: string;
   aiDescription?: string;
 }
@@ -144,18 +145,17 @@ function parseDetailApplication(raw: unknown): DetailApplication | null {
 
   if (typeof item.id !== 'string' || !isAppStatus(item.status)) return null;
 
-  const firstImage = Array.isArray(item.asset?.images)
+  const imageUrls = Array.isArray(item.asset?.images)
     ? [...(item.asset?.images ?? [])]
         .sort((a, b) => {
           const aOrder = typeof a?.sortOrder === 'number' ? a.sortOrder : 9999;
           const bOrder = typeof b?.sortOrder === 'number' ? b.sortOrder : 9999;
           return aOrder - bOrder;
         })
-        .find(
-          (image): image is { fileUrl: string; sortOrder?: unknown } =>
-            typeof image?.fileUrl === 'string',
+        .flatMap((image) =>
+          typeof image?.fileUrl === 'string' ? [image.fileUrl] : [],
         )
-    : undefined;
+    : [];
 
   return {
     id: item.id,
@@ -168,7 +168,7 @@ function parseDetailApplication(raw: unknown): DetailApplication | null {
     assetType: isLookupAssetType(item.asset?.assetType)
       ? item.asset.assetType
       : 'STONE_WALL_FIELD_HOUSE',
-    thumbnailUrl: firstImage?.fileUrl ?? null,
+    imageUrls,
     aiDescription:
       typeof item.asset?.description === 'string'
         ? item.asset.description
@@ -218,16 +218,28 @@ export function LookupDetailContent({
 }
 
 function BuildingInfoTab({ detail }: { detail: DetailApplication }) {
-  const imageSrc =
-    detail.thumbnailUrl ??
-    LOOKUP_ASSET_IMAGE[detail.assetType] ??
-    DEFAULT_ASSET_IMAGE;
+  const assetImageSrc =
+    LOOKUP_ASSET_IMAGE[detail.assetType] ?? DEFAULT_ASSET_IMAGE;
   const assetLabel = LOOKUP_ASSET_LABEL[detail.assetType] ?? detail.assetType;
   const appliedDate = formatDotDate(detail.appliedAt);
+  const galleryImages = [
+    ...detail.imageUrls.map((src, index) => ({
+      src,
+      alt: `건물 사진 ${index + 1}`,
+      badge: `건물 사진 ${index + 1}`,
+      fit: 'cover' as const,
+    })),
+    {
+      src: assetImageSrc,
+      alt: `${assetLabel} 유형 이미지`,
+      badge: `${assetLabel} 유형`,
+      fit: 'contain' as const,
+    },
+  ];
 
   return (
     <VStack style={{ gap: 'var(--size-space-300)' }}>
-      <ThumbnailFrame imageSrc={imageSrc} alt="건물 대표 이미지" />
+      <ThumbnailCarousel images={galleryImages} />
 
       <VStack style={{ gap: 'var(--size-space-175)' }}>
         <Text
@@ -268,6 +280,20 @@ function BuildingInfoTab({ detail }: { detail: DetailApplication }) {
 function AnalysisTab({ detail }: { detail: DetailApplication }) {
   const imageSrc = LOOKUP_ASSET_IMAGE[detail.assetType] ?? DEFAULT_ASSET_IMAGE;
   const assetLabel = LOOKUP_ASSET_LABEL[detail.assetType] ?? detail.assetType;
+  const galleryImages = [
+    ...detail.imageUrls.map((src, index) => ({
+      src,
+      alt: `건물 사진 ${index + 1}`,
+      badge: `건물 사진 ${index + 1}`,
+      fit: 'cover' as const,
+    })),
+    {
+      src: imageSrc,
+      alt: `${assetLabel} 유형 이미지`,
+      badge: `${assetLabel} 유형`,
+      fit: 'contain' as const,
+    },
+  ];
 
   const ai = detail.aiDescription
     ? parseAiAnalysis(detail.aiDescription)
@@ -275,7 +301,7 @@ function AnalysisTab({ detail }: { detail: DetailApplication }) {
 
   return (
     <VStack style={{ gap: 'var(--size-space-300)' }}>
-      <ThumbnailFrame imageSrc={imageSrc} alt="주택 유형 이미지" />
+      <ThumbnailCarousel images={galleryImages} />
 
       <Text
         typography="heading3"
@@ -432,27 +458,169 @@ function AnalysisTab({ detail }: { detail: DetailApplication }) {
   );
 }
 
-function ThumbnailFrame({ alt, imageSrc }: { alt: string; imageSrc: string }) {
+function ThumbnailCarousel({
+  images,
+}: {
+  images: Array<{
+    src: string;
+    alt: string;
+    badge: string;
+    fit: 'cover' | 'contain';
+  }>;
+}) {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  if (images.length === 0) {
+    return null;
+  }
+
+  const activeImage = images[activeIndex] ?? images[0];
+
   return (
-    <Box
+    <VStack style={{ gap: 'var(--size-space-150)' }}>
+      <Box
+        style={{
+          position: 'relative',
+          width: '100%',
+          aspectRatio: '1.62 / 1',
+          borderRadius: 'calc(var(--size-space-250) + var(--size-050))',
+          background:
+            'linear-gradient(180deg, var(--color-bg-primary-100) 0%, var(--color-bg-canvas) 100%)',
+          overflow: 'hidden',
+        }}
+      >
+        <Image
+          key={activeImage.src}
+          src={activeImage.src}
+          alt={activeImage.alt}
+          fill
+          unoptimized
+          sizes="100vw"
+          style={{
+            objectFit: activeImage.fit,
+            padding:
+              activeImage.fit === 'contain' ? 'var(--size-space-200)' : 0,
+          }}
+        />
+
+        <Box
+          style={{
+            position: 'absolute',
+            top: 'var(--size-space-175)',
+            left: 'var(--size-space-175)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '0 var(--size-space-150)',
+            height: 'calc(var(--size-space-300) + var(--size-space-050))',
+            borderRadius: '999px',
+            background: 'rgb(17 25 40 / 0.72)',
+            backdropFilter: 'blur(8px)',
+          }}
+        >
+          <Text
+            typography="body2"
+            style={{ color: 'var(--color-white)', fontWeight: 700 }}
+          >
+            {activeImage.badge}
+          </Text>
+        </Box>
+
+        {images.length > 1 ? (
+          <>
+            <CarouselArrow
+              direction="prev"
+              disabled={activeIndex === 0}
+              onClick={() =>
+                setActiveIndex((current) => Math.max(current - 1, 0))
+              }
+            />
+            <CarouselArrow
+              direction="next"
+              disabled={activeIndex === images.length - 1}
+              onClick={() =>
+                setActiveIndex((current) =>
+                  Math.min(current + 1, images.length - 1),
+                )
+              }
+            />
+          </>
+        ) : null}
+      </Box>
+
+      {images.length > 1 ? (
+        <HStack
+          style={{
+            justifyContent: 'center',
+            gap: 'var(--size-space-100)',
+            flexWrap: 'wrap',
+          }}
+        >
+          {images.map((image, index) => {
+            const isActive = index === activeIndex;
+
+            return (
+              <button
+                key={`${image.src}-${index}`}
+                type="button"
+                aria-label={`${index + 1}번째 이미지 보기`}
+                aria-pressed={isActive}
+                onClick={() => setActiveIndex(index)}
+                style={{
+                  width: isActive
+                    ? 'var(--size-space-300)'
+                    : 'var(--size-space-100)',
+                  height: 'var(--size-space-100)',
+                  border: 'none',
+                  borderRadius: '999px',
+                  background: isActive
+                    ? 'var(--color-fg-primary)'
+                    : 'var(--color-border-normal)',
+                  transition:
+                    'width var(--duration-fast) var(--ease-default), background var(--duration-fast) var(--ease-default)',
+                  cursor: 'pointer',
+                }}
+              />
+            );
+          })}
+        </HStack>
+      ) : null}
+    </VStack>
+  );
+}
+
+function CarouselArrow({
+  direction,
+  disabled,
+  onClick,
+}: {
+  direction: 'prev' | 'next';
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={direction === 'prev' ? '이전 이미지' : '다음 이미지'}
+      disabled={disabled}
+      onClick={onClick}
       style={{
-        position: 'relative',
-        width: '100%',
-        aspectRatio: '1.62 / 1',
-        borderRadius: 'calc(var(--size-space-250) + var(--size-050))',
-        background:
-          'linear-gradient(180deg, var(--color-bg-primary-100) 0%, var(--color-bg-canvas) 100%)',
-        overflow: 'hidden',
+        position: 'absolute',
+        top: '50%',
+        [direction === 'prev' ? 'left' : 'right']: 'var(--size-space-175)',
+        transform: 'translateY(-50%)',
+        width: 'var(--size-space-500)',
+        height: 'var(--size-space-500)',
+        border: 'none',
+        borderRadius: '999px',
+        background: disabled ? 'rgb(17 25 40 / 0.28)' : 'rgb(17 25 40 / 0.66)',
+        color: 'var(--color-white)',
+        fontSize: 'var(--size-space-250)',
+        fontWeight: 700,
+        cursor: disabled ? 'default' : 'pointer',
+        backdropFilter: 'blur(8px)',
       }}
     >
-      <Image
-        src={imageSrc}
-        alt={alt}
-        fill
-        unoptimized
-        sizes="100vw"
-        style={{ objectFit: 'cover' }}
-      />
-    </Box>
+      {direction === 'prev' ? '‹' : '›'}
+    </button>
   );
 }
