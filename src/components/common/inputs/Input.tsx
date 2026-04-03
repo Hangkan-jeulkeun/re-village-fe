@@ -78,6 +78,14 @@ export default function Input({
               flexWrap: 'wrap',
             }}
           >
+            {required ? (
+              <Text
+                typography="body1"
+                style={{ color: 'var(--color-error)', fontWeight: 700 }}
+              >
+                *
+              </Text>
+            ) : null}
             <Text
               typography="body1"
               style={{
@@ -88,14 +96,6 @@ export default function Input({
             >
               {label}
             </Text>
-            {required ? (
-              <Text
-                typography="body1"
-                style={{ color: 'var(--color-error)', fontWeight: 700 }}
-              >
-                *
-              </Text>
-            ) : null}
             {!required && optionalText ? (
               <Text
                 typography="body2"

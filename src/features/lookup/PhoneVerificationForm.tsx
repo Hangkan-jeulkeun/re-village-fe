@@ -36,6 +36,7 @@ export function PhoneVerificationForm() {
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [codeSent, setCodeSent] = useState(false);
+  const [codeError, setCodeError] = useState('');
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,10 +48,17 @@ export function PhoneVerificationForm() {
   const { mutate: verifyCode, isPending: isVerifying } = useVerifyCode();
 
   function handleRequestCode() {
-    requestCode({ name, phone }, { onSuccess: () => setCodeSent(true) });
+    setCodeError('');
+    requestCode(
+      { name, phone },
+      {
+        onSuccess: () => setCodeSent(true),
+      },
+    );
   }
 
   function handleVerify() {
+    setCodeError('');
     verifyCode(
       { name, phone, code },
       {
@@ -63,11 +71,14 @@ export function PhoneVerificationForm() {
 
           router.push(redirectTo);
         },
+        onError: () => {
+          setCodeError('인증번호가 일치하지 않아요.');
+        },
       },
     );
   }
 
-  const canVerify = codeSent && code.trim().length > 0 && !isVerifying;
+  const canVerify = codeSent && code.trim().length === 6 && !isVerifying;
 
   return (
     <Box
@@ -116,10 +127,14 @@ export function PhoneVerificationForm() {
           <Input
             name="name"
             label="이름"
+            required
             placeholder="이름 입력"
             inputClassName={styles.placeholderInput}
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (codeError) setCodeError('');
+            }}
           />
 
           <HStack
@@ -133,11 +148,15 @@ export function PhoneVerificationForm() {
               <Input
                 name="phone"
                 label="휴대폰 번호"
+                required
                 placeholder="휴대폰 번호 입력"
                 inputClassName={styles.placeholderInput}
                 value={phone}
                 inputMode="tel"
-                onChange={(e) => setPhone(formatPhoneNumber(e.target.value))}
+                onChange={(e) => {
+                  setPhone(formatPhoneNumber(e.target.value));
+                  if (codeError) setCodeError('');
+                }}
               />
             </Box>
             <Box
@@ -174,10 +193,16 @@ export function PhoneVerificationForm() {
           <Input
             name="code"
             label="인증번호"
+            required
             placeholder="인증번호 6자리 입력"
             inputClassName={styles.placeholderInput}
+            inputMode="numeric"
             value={code}
-            onChange={(e) => setCode(e.target.value)}
+            error={codeError}
+            onChange={(e) => {
+              setCode(e.target.value.replace(/\D/g, '').slice(0, 6));
+              if (codeError) setCodeError('');
+            }}
           />
         </VStack>
 
