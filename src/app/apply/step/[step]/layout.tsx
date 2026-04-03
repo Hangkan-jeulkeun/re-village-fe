@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { Text, Toast } from '@vapor-ui/core';
+import { Box, HStack, IconButton, Text, Toast, VStack } from '@vapor-ui/core';
 import { WarningIcon, CloseOutlineIcon } from '@vapor-ui/icons';
 import AppLayout from '@/components/layout/AppLayout';
 import Button, { ButtonPair } from '@/components/common/base/Button';
@@ -138,50 +138,40 @@ export default function StepLayout({ children }: StepLayoutProps) {
           style={{
             flexShrink: 0,
             background: 'var(--color-bg-canvas)',
-            display: 'fixed',
             width: '100%',
-            top: 0,
-            left: 0,
           }}
         >
-          <div
+          <HStack
             style={{
-              display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '20px 15px',
+              padding: 'var(--gap-md) var(--gap-sm)',
               position: 'relative',
             }}
           >
-            <button
-              type="button"
+            <IconButton
               aria-label="닫기"
+              variant="ghost"
               style={{
                 position: 'absolute',
-                left: '20px',
-                border: 0,
-                background: 'transparent',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
+                left: 'var(--gap-sm)',
                 color: 'var(--color-fg-subtle)',
-                lineHeight: 1,
               }}
               onClick={() => router.push('/apply/landing')}
             >
               <CloseOutlineIcon size={22} />
-            </button>
+            </IconButton>
             <Text typography="body1" style={{ fontWeight: 700 }}>
               빈집 서비스 신청하기
             </Text>
-          </div>
+          </HStack>
 
-          <div
+          <HStack
             aria-hidden="true"
-            style={{ display: 'flex', gap: '6px', padding: '0 20px' }}
+            style={{ gap: 'var(--gap-xs)', padding: '0 var(--screen-margin)' }}
           >
             {[1, 2, 3, 4].map((seg) => (
-              <div
+              <Box
                 key={seg}
                 style={{
                   flex: 1,
@@ -193,22 +183,24 @@ export default function StepLayout({ children }: StepLayoutProps) {
                       : step > seg
                         ? 'color-mix(in srgb, var(--color-brand-interactive) 35%, var(--color-bg-canvas))'
                         : 'var(--color-border-normal)',
-                  transition: 'background 0.2s ease',
+                  transition:
+                    'background var(--duration-fast) var(--ease-default)',
                 }}
               />
             ))}
-          </div>
+          </HStack>
 
-          <p
+          <Text
+            typography="body2"
             style={{
-              margin: 0,
+              display: 'block',
               padding: 'var(--gap-xs) var(--screen-margin) var(--gap-sm)',
-              fontSize: '12px',
               color: 'var(--color-fg-placeholder)',
+              textAlign: 'center',
             }}
           >
             {stepLabel}
-          </p>
+          </Text>
         </header>
       ) : null}
 
@@ -218,7 +210,7 @@ export default function StepLayout({ children }: StepLayoutProps) {
           flex: 1,
           overflowY: 'auto',
           overscrollBehavior: 'contain',
-          padding: '28px 20px 20px',
+          padding: 'var(--gap-lg) var(--screen-margin) var(--gap-md)',
           display: 'flex',
           flexDirection: 'column',
         }}
@@ -230,10 +222,7 @@ export default function StepLayout({ children }: StepLayoutProps) {
       {!isComplete ? (
         <footer
           style={{
-            display: 'fixed',
             width: '100%',
-            bottom: 0,
-            left: 0,
             flexShrink: 0,
             padding: 'var(--gap-sm) var(--screen-margin) var(--gap-lg)',
             borderTop: '1px solid var(--color-border-normal)',
@@ -289,18 +278,19 @@ export default function StepLayout({ children }: StepLayoutProps) {
 
           {/* Step 4: 이전 | 다음(제출) */}
           {step === 4 ? (
-            <>
+            <VStack style={{ gap: 0 }}>
               {createApplication.isError ? (
-                <p
+                <Text
+                  typography="body2"
                   style={{
-                    margin: '0 0 var(--gap-xs)',
+                    display: 'block',
+                    marginBottom: 'var(--gap-xs)',
                     color: 'var(--color-error)',
-                    fontSize: '14px',
                     textAlign: 'center',
                   }}
                 >
                   신청 중 오류가 발생했습니다. 다시 시도해주세요.
-                </p>
+                </Text>
               ) : null}
               <ButtonPair
                 leftButton={{
@@ -313,7 +303,7 @@ export default function StepLayout({ children }: StepLayoutProps) {
                   onClick: handleSubmit,
                 }}
               />
-            </>
+            </VStack>
           ) : null}
         </footer>
       ) : null}

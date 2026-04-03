@@ -4,8 +4,8 @@ import Image from 'next/image';
 import { useParams, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Text, Toast } from '@vapor-ui/core';
-import { CameraIcon } from '@vapor-ui/icons';
+import { HStack, Text, Toast } from '@vapor-ui/core';
+import { AttachFileOutlineIcon, CameraIcon } from '@vapor-ui/icons';
 import Input from '@/components/common/inputs/Input';
 import Select from '@/components/common/inputs/Select';
 import { useExtractDocuments } from '@/features/applications/queries';
@@ -397,56 +397,107 @@ export default function ApplyStepPage() {
             onChange={(e) => handleDocumentUpload(e.target.files)}
           />
 
-          <div
-            role="button"
-            tabIndex={0}
-            aria-label="민간인증으로 서류 불러오기"
-            onDragOver={(e) => {
-              e.preventDefault();
-              setIsDragOver(true);
-            }}
-            onDragLeave={() => setIsDragOver(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setIsDragOver(false);
-              justDroppedRef.current = true;
-              handleDocumentUpload(e.dataTransfer.files);
-            }}
-            onClick={() => {
-              if (justDroppedRef.current) {
-                justDroppedRef.current = false;
-                return;
-              }
-              window.open('https://plus.gov.kr/', '_blank', 'noopener');
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ')
-                window.open('https://plus.gov.kr/', '_blank', 'noopener');
-            }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '64px',
-              border: `2px solid ${isDragOver ? 'var(--color-brand-interactive)' : 'var(--color-border-primary)'}`,
-              borderRadius: '16px',
-              background: isDragOver
-                ? 'var(--color-bg-canvas-sub)'
-                : 'var(--color-bg-canvas)',
-              cursor: 'pointer',
-              transition: 'background 0.15s ease, border-color 0.15s ease',
-            }}
-          >
-            <span
+          <HStack style={{ gap: 'var(--gap-sm)', alignItems: 'stretch' }}>
+            <button
+              type="button"
+              aria-label="첨부파일 추가"
+              onClick={() => documentInputRef.current?.click()}
               style={{
-                fontSize: 'var(--size-senior-font)',
-                fontWeight: 700,
-                color: 'var(--color-brand-interactive)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+                flexShrink: 0,
+                width: '72px',
+                height: '64px',
+                border: '2px solid var(--color-border-normal)',
+                borderRadius: '16px',
+                background: 'var(--color-bg-canvas)',
+                cursor: 'pointer',
               }}
             >
-              민간인증으로 서류 불러오기
-            </span>
-          </div>
+              <AttachFileOutlineIcon
+                aria-hidden="true"
+                style={{ color: 'var(--color-fg-subtle)' }}
+              />
+              <Text
+                typography="body3"
+                style={{ color: 'var(--color-fg-subtle)' }}
+              >
+                첨부파일
+              </Text>
+            </button>
+
+            <div
+              role="button"
+              tabIndex={0}
+              aria-label="민간인증으로 서류 불러오기"
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragOver(true);
+              }}
+              onDragLeave={() => setIsDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragOver(false);
+                justDroppedRef.current = true;
+                handleDocumentUpload(e.dataTransfer.files);
+              }}
+              onClick={() => {
+                if (justDroppedRef.current) {
+                  justDroppedRef.current = false;
+                  return;
+                }
+                const w = 480;
+                const h = 720;
+                const left = window.screenX + window.outerWidth - w - 20;
+                const top = window.screenY + 60;
+                window.open(
+                  'https://plus.gov.kr/',
+                  '_blank',
+                  `noopener,width=${w},height=${h},left=${left},top=${top}`,
+                );
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  const w = 480;
+                  const h = 720;
+                  const left = window.screenX + window.outerWidth - w - 20;
+                  const top = window.screenY + 60;
+                  window.open(
+                    'https://plus.gov.kr/',
+                    '_blank',
+                    `noopener,width=${w},height=${h},left=${left},top=${top}`,
+                  );
+                }
+              }}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '64px',
+                border: `2px solid ${isDragOver ? 'var(--color-brand-interactive)' : 'var(--color-border-primary)'}`,
+                borderRadius: '16px',
+                background: isDragOver
+                  ? 'var(--color-bg-canvas-sub)'
+                  : 'var(--color-bg-canvas)',
+                cursor: 'pointer',
+                transition: 'background 0.15s ease, border-color 0.15s ease',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 'var(--size-senior-font)',
+                  fontWeight: 700,
+                  color: 'var(--color-brand-interactive)',
+                }}
+              >
+                민간인증으로 서류 불러오기
+              </span>
+            </div>
+          </HStack>
 
           {attachedDocuments.length > 0 ? (
             <ul
