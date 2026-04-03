@@ -71,7 +71,7 @@ export default function AdminLoginPage() {
           letterSpacing: '0.5px',
         }}
       >
-        한 집 줄클 Admin
+        한집줄클 Admin
       </h1>
 
       {/* 폼 */}

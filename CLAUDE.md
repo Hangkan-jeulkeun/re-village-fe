@@ -6,7 +6,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## 서비스 이름
 
-**한 집 줄클**
+**한집줄클**
 
 ## 프로젝트 스택
 

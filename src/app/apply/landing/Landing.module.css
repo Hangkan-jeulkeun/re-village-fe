@@ -6,6 +6,12 @@
   padding: 0 var(--screen-margin);
 }
 
+.logoWrapper {
+  display: flex;
+  justify-content: center;
+  padding: 150px 0 82px;
+}
+
 .title {
   margin-top: 64px;
   font-size: 56px;
@@ -24,6 +30,7 @@
   justify-content: flex-end;
   gap: var(--gap-md);
   padding: var(--gap-lg) 0;
+  padding-top: 0;
 }
 
 .illustrationImage {

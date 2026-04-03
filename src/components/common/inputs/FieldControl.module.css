@@ -46,6 +46,11 @@
   padding: 0 var(--size-space-250);
 }
 
+.input[data-readonly] {
+  background-color: var(--badge-완료-bg);
+  color: var(--color-border-normal);
+}
+
 .textarea {
   width: 100%;
   min-height: 140px;

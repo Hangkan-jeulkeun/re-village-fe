@@ -2,10 +2,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import AppLayout from '@/components/layout/AppLayout';
 import styles from './Landing.module.css';
+import { Logo } from '@/components/common/base/Logo';
 
 export default function ApplyLandingPage() {
   return (
     <AppLayout className={styles.page}>
+      <div className={styles.logoWrapper}>
+        <Logo height={52} />
+      </div>
       <div className={styles.illustration}>
         <Image
           src="/images/home-type3-parking.png"

@@ -99,6 +99,7 @@ export default function ApplyStepPage() {
   );
   const [attachedDocuments, setAttachedDocuments] = useState<File[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
+  const justDroppedRef = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -201,11 +202,10 @@ export default function ApplyStepPage() {
               {content.title}
             </Text>
             <Text
-              typography="body2"
+              typography="subtitle1"
               style={{
                 marginTop: 'var(--gap-xs)',
                 color: 'var(--color-fg-subtle)',
-                lineHeight: 1.6,
               }}
             >
               {content.description}
@@ -409,12 +409,19 @@ export default function ApplyStepPage() {
             onDrop={(e) => {
               e.preventDefault();
               setIsDragOver(false);
+              justDroppedRef.current = true;
               handleDocumentUpload(e.dataTransfer.files);
             }}
-            onClick={() => documentInputRef.current?.click()}
+            onClick={() => {
+              if (justDroppedRef.current) {
+                justDroppedRef.current = false;
+                return;
+              }
+              window.open('https://plus.gov.kr/', '_blank', 'noopener');
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ')
-                documentInputRef.current?.click();
+                window.open('https://plus.gov.kr/', '_blank', 'noopener');
             }}
             style={{
               display: 'flex',
@@ -446,7 +453,6 @@ export default function ApplyStepPage() {
               style={{
                 display: 'grid',
                 gap: 'var(--gap-xs)',
-                paddingLeft: 'var(--gap-md)',
                 color: 'var(--color-fg-subtle)',
                 fontSize: 'var(--size-senior-label)',
               }}
