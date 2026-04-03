@@ -7,9 +7,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { HStack, Text, Toast } from '@vapor-ui/core';
 import { AttachFileOutlineIcon, CameraIcon } from '@vapor-ui/icons';
 import Input from '@/components/common/inputs/Input';
-import Select from '@/components/common/inputs/Select';
 import { useExtractDocuments } from '@/features/applications/queries';
 import { useApplyStore } from '@/stores/useApplyStore';
+import { compressImageToMaxSize } from '@/utils/compressImageToMaxSize';
 import { formatPhoneNumber } from '@/utils/formatPhoneNumber';
 
 const TOTAL_STEPS = 5;
@@ -120,30 +120,53 @@ export default function ApplyStepPage() {
   const MAX_PHOTO_SIZE_BYTES = 10 * 1024 * 1024;
   const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png'];
 
-  const handlePhotoUpload = (files: FileList | null) => {
+  const handlePhotoUpload = async (files: FileList | null) => {
     if (!files) return;
 
     const valid: File[] = [];
 
-    Array.from(files).forEach((file) => {
+    for (const file of Array.from(files)) {
       if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
         toastManager.add({
           title: '지원하지 않는 형식',
           description: `JPG, PNG 파일만 업로드할 수 있습니다 (${file.name})`,
           colorPalette: 'danger',
         });
-        return;
+        continue;
       }
-      if (file.size > MAX_PHOTO_SIZE_BYTES) {
+
+      try {
+        const normalizedFile = await compressImageToMaxSize(
+          file,
+          MAX_PHOTO_SIZE_BYTES,
+        );
+
+        if (normalizedFile.size > MAX_PHOTO_SIZE_BYTES) {
+          toastManager.add({
+            title: '파일 크기 초과',
+            description: `파일 크기는 10MB 이하여야 합니다 (${file.name})`,
+            colorPalette: 'danger',
+          });
+          continue;
+        }
+
+        if (normalizedFile !== file) {
+          toastManager.add({
+            title: '사진 용량을 자동으로 조절했어요',
+            description: `${file.name} 파일을 업로드 가능한 크기로 줄였습니다.`,
+            colorPalette: 'primary',
+          });
+        }
+
+        valid.push(normalizedFile);
+      } catch {
         toastManager.add({
           title: '파일 크기 초과',
-          description: `파일 크기는 10MB 이하여야 합니다 (${file.name})`,
+          description: `10MB 이하 사진만 업로드할 수 있습니다 (${file.name})`,
           colorPalette: 'danger',
         });
-        return;
       }
-      valid.push(file);
-    });
+    }
 
     if (valid.length > 0) {
       setPhotos([...photos, ...valid]);
@@ -152,6 +175,10 @@ export default function ApplyStepPage() {
 
   const handleDeletePhoto = (index: number) => {
     setPhotos(photos.filter((_, i) => i !== index));
+  };
+
+  const handleDeleteDocument = (index: number) => {
+    setAttachedDocuments((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleDocumentUpload = (files: FileList | null) => {
@@ -278,7 +305,11 @@ export default function ApplyStepPage() {
             accept="image/png,image/jpeg"
             multiple
             style={{ display: 'none' }}
-            onChange={(e) => handlePhotoUpload(e.target.files)}
+            onChange={async (e) => {
+              const input = e.currentTarget;
+              await handlePhotoUpload(input.files);
+              input.value = '';
+            }}
           />
           <button
             type="button"
@@ -499,42 +530,115 @@ export default function ApplyStepPage() {
             </div>
           </HStack>
 
-          {attachedDocuments.length > 0 ? (
-            <ul
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--gap-sm)',
+            }}
+          >
+            <div
               style={{
-                display: 'grid',
-                gap: 'var(--gap-xs)',
-                color: 'var(--color-fg-subtle)',
-                fontSize: 'var(--size-senior-label)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--size-space-050)',
               }}
             >
-              {attachedDocuments.map((doc) => (
-                <li key={doc.name}>{doc.name}</li>
-              ))}
-            </ul>
-          ) : null}
+              <Text
+                typography="body1"
+                style={{ color: 'var(--color-error)', fontWeight: 700 }}
+              >
+                *
+              </Text>
+              <Text
+                typography="body1"
+                style={{ color: 'var(--color-fg-normal)', fontWeight: 700 }}
+              >
+                필수서류 (건축물대장)
+              </Text>
+            </div>
 
-          <Select
+            {attachedDocuments.length === 0 ? (
+              <Text
+                typography="body2"
+                style={{ color: 'var(--color-fg-placeholder)' }}
+              >
+                첨부된 파일이 없습니다
+              </Text>
+            ) : (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 'var(--gap-xs)',
+                }}
+              >
+                {attachedDocuments.map((doc, index) => (
+                  <div
+                    key={`${doc.name}-${index}`}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 'var(--gap-sm)',
+                      padding: '0 var(--gap-sm)',
+                      minHeight: 'var(--size-senior-input)',
+                      borderRadius: 'var(--size-senior-radius)',
+                      border: '1px solid var(--color-border-normal)',
+                      background: 'var(--color-bg-canvas-sub)',
+                    }}
+                  >
+                    <Text
+                      typography="body2"
+                      style={{
+                        color: 'var(--color-fg-subtle)',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {doc.name}
+                    </Text>
+                    <button
+                      type="button"
+                      aria-label={`${doc.name} 삭제`}
+                      onClick={() => handleDeleteDocument(index)}
+                      style={{
+                        flexShrink: 0,
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '50%',
+                        border: 0,
+                        background: 'var(--color-fg-subtle)',
+                        color: 'var(--color-fg-inverse)',
+                        fontSize: '11px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <Input
+            id="buildingType"
             label="건물 종류"
+            placeholder={isExtracting ? '분석 중...' : '서류 첨부 후 자동 입력'}
             value={buildingType}
-            onValueChange={setBuildingType}
-            placeholder={
-              isExtracting ? '분석 중...' : '건물 종류를 선택해주세요'
-            }
-            disabled
-            options={[
-              { value: '단독 주택', label: '단독 주택' },
-              { value: '다가구 주택', label: '다가구 주택' },
-              { value: '근린 생활 시설', label: '근린 생활 시설' },
-            ]}
+            readOnly
+            onChange={(e) => setBuildingType(e.target.value)}
           />
 
           <Input
             id="address"
             label="주소"
-            placeholder={
-              isExtracting ? '분석 중...' : '예: 제주특별자치도 서귀포시...'
-            }
+            placeholder={isExtracting ? '분석 중...' : '서류 첨부 후 자동 입력'}
             value={address}
             readOnly
             onChange={(e) => setAddress(e.target.value)}
@@ -544,7 +648,7 @@ export default function ApplyStepPage() {
             id="area"
             label="면적 (m²)"
             inputMode="decimal"
-            placeholder={isExtracting ? '분석 중...' : '예: 84.5'}
+            placeholder={isExtracting ? '분석 중...' : '서류 첨부 후 자동 입력'}
             value={area}
             readOnly
             onChange={(e) => setArea(e.target.value)}

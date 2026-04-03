@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { Box, HStack, IconButton, Text, Toast, VStack } from '@vapor-ui/core';
 import { WarningIcon, CloseOutlineIcon } from '@vapor-ui/icons';
+import { ConfirmAlert } from '@/components/common/ConfirmAlert';
 import AppLayout from '@/components/layout/AppLayout';
 import Button, { ButtonPair } from '@/components/common/base/Button';
 import {
@@ -47,15 +48,17 @@ export default function StepLayout({ children }: StepLayoutProps) {
     maxReachedStep,
     setVerificationSent,
     setMaxReachedStep,
+    clearVerificationState,
     reset,
   } = useApplyStore();
 
-  const { setTokens } = useAuthStore();
+  const { accessToken, setTokens, clearTokens } = useAuthStore();
 
   const toastManager = Toast.useToastManager();
   const createApplication = useCreateApplicationMultipart();
   const requestSubmitCode = useRequestCode();
   const verifySubmitCode = useVerifyCode();
+  const [backToStepOneAlertOpen, setBackToStepOneAlertOpen] = useState(false);
 
   /* 전화번호: 숫자 기준 10자리 이상 (010-0000-0000) */
   const isPhoneValid = phone.replace(/\D/g, '').length >= 10;
@@ -120,6 +123,22 @@ export default function StepLayout({ children }: StepLayoutProps) {
         },
       },
     );
+  };
+
+  const handleBackToStepOne = () => {
+    if (accessToken || verificationSent || verificationCode.trim().length > 0) {
+      setBackToStepOneAlertOpen(true);
+      return;
+    }
+
+    router.push('/apply/step/1');
+  };
+
+  const handleConfirmBackToStepOne = () => {
+    clearTokens();
+    clearVerificationState();
+    setBackToStepOneAlertOpen(false);
+    router.push('/apply/step/1');
   };
 
   return (
@@ -260,7 +279,10 @@ export default function StepLayout({ children }: StepLayoutProps) {
             <ButtonPair
               leftButton={{
                 children: '이전',
-                onClick: () => router.push(`/apply/step/${step - 1}`),
+                onClick:
+                  step === 2
+                    ? handleBackToStepOne
+                    : () => router.push(`/apply/step/${step - 1}`),
               }}
               rightButton={{
                 children: '다음',
@@ -307,6 +329,16 @@ export default function StepLayout({ children }: StepLayoutProps) {
           ) : null}
         </footer>
       ) : null}
+
+      <ConfirmAlert
+        open={backToStepOneAlertOpen}
+        onOpenChange={setBackToStepOneAlertOpen}
+        title="인증 정보가 초기화됩니다."
+        description="정말 이전 단계로 이동하시겠습니까?"
+        cancelLabel="취소"
+        confirmLabel="이동"
+        onConfirm={handleConfirmBackToStepOne}
+      />
     </AppLayout>
   );
 }

@@ -22,6 +22,7 @@ interface ApplyStore extends ApplyFormState {
   setBuildingType: (buildingType: string) => void;
   setPhotos: (photos: File[]) => void;
   setMaxReachedStep: (step: number) => void;
+  clearVerificationState: () => void;
   reset: () => void;
 }
 
@@ -48,5 +49,11 @@ export const useApplyStore = create<ApplyStore>((set) => ({
   setBuildingType: (buildingType) => set({ buildingType }),
   setPhotos: (photos) => set({ photos }),
   setMaxReachedStep: (maxReachedStep) => set({ maxReachedStep }),
+  clearVerificationState: () =>
+    set({
+      verificationSent: false,
+      verificationCode: '',
+      maxReachedStep: 1,
+    }),
   reset: () => set(initialState),
 }));
