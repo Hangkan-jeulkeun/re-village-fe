@@ -10,45 +10,28 @@ export function LookupHistoryLogger() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const accessToken = useAuthStore((state) => state.accessToken);
   const clearTokens = useAuthStore((state) => state.clearTokens);
-  const { data, error, refetch } = useMyApplications();
+  const { error } = useMyApplications();
 
   const redirectUrl = (() => {
     const queryString = searchParams.toString();
     const currentPath = queryString ? `${pathname}?${queryString}` : pathname;
-    return `/lookup/login?redirect=${encodeURIComponent(currentPath)}`;
+    return `/lookup/phone-verification?redirect=${encodeURIComponent(currentPath)}`;
   })();
 
   useEffect(() => {
-    if (!accessToken) {
-      router.replace(redirectUrl);
-      return;
+    if (!error) return;
+
+    const statusCode =
+      typeof error === 'object' && error !== null && 'error' in error
+        ? (error.error as { statusCode?: number })?.statusCode
+        : undefined;
+
+    if (statusCode === 401) {
+      clearTokens();
     }
 
-    void refetch();
-  }, [accessToken, redirectUrl, refetch, router]);
-
-  useEffect(() => {
-    if (data) {
-      console.log('[lookup/history] my applications', data);
-    }
-  }, [data]);
-
-  useEffect(() => {
-    if (error) {
-      console.error('[lookup/history] my applications error', error);
-
-      const statusCode =
-        typeof error === 'object' && error !== null && 'error' in error
-          ? (error.error as { statusCode?: number })?.statusCode
-          : undefined;
-
-      if (statusCode === 401) {
-        clearTokens();
-        router.replace(redirectUrl);
-      }
-    }
+    router.replace(redirectUrl);
   }, [clearTokens, error, redirectUrl, router]);
 
   return null;

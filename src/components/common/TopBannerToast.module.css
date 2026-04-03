@@ -1,0 +1,19 @@
+.banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: calc(env(safe-area-inset-top) + var(--gap-md)) var(--gap-lg)
+    var(--gap-md);
+  background: var(--color-brand-primary);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.18);
+  /* 1) 진입: 380ms  2) 퇴장: 400ms / delay 2200ms */
+  animation:
+    slideDownFade 380ms var(--ease-out) 0ms both,
+    slideUpHide 400ms var(--ease-out) 2200ms both;
+}

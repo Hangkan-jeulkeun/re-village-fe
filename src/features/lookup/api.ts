@@ -67,4 +67,19 @@ export const lookupApi = {
 
     return apiClient.GET('/api/v1/applications/me');
   },
+
+  getMyApplicationDetail: (id: string) =>
+    apiClient.GET('/api/v1/applications/me/{id}', {
+      params: { path: { id } },
+    }),
+
+  getMyApplicationAnalysis: (id: string) =>
+    apiClient.GET('/api/v1/applications/{id}/analysis', {
+      params: { path: { id } },
+    }),
+
+  cancelApplication: (id: string) =>
+    apiClient.PATCH('/api/v1/applications/{id}/cancel', {
+      params: { path: { id } },
+    }),
 };
