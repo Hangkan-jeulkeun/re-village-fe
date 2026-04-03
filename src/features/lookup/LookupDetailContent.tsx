@@ -210,10 +210,19 @@ export function LookupDetailContent({
     );
   }
 
-  return activeTab === 'building' ? (
-    <BuildingInfoTab detail={detail} />
-  ) : (
-    <AnalysisTab detail={detail} />
+  return (
+    <Box
+      key={activeTab}
+      style={{
+        animation: 'tabContentEnter var(--duration-normal) var(--ease-out)',
+      }}
+    >
+      {activeTab === 'building' ? (
+        <BuildingInfoTab detail={detail} />
+      ) : (
+        <AnalysisTab detail={detail} />
+      )}
+    </Box>
   );
 }
 
@@ -239,7 +248,10 @@ function BuildingInfoTab({ detail }: { detail: DetailApplication }) {
 
   return (
     <VStack style={{ gap: 'var(--size-space-300)' }}>
-      <ThumbnailCarousel images={galleryImages} />
+      <ThumbnailCarousel
+        key={galleryImages.map((i) => i.src).join('|')}
+        images={galleryImages}
+      />
 
       <VStack style={{ gap: 'var(--size-space-175)' }}>
         <Text
@@ -301,7 +313,10 @@ function AnalysisTab({ detail }: { detail: DetailApplication }) {
 
   return (
     <VStack style={{ gap: 'var(--size-space-300)' }}>
-      <ThumbnailCarousel images={galleryImages} />
+      <ThumbnailCarousel
+        key={galleryImages.map((i) => i.src).join('|')}
+        images={galleryImages}
+      />
 
       <Text
         typography="heading3"
@@ -405,13 +420,14 @@ function AnalysisTab({ detail }: { detail: DetailApplication }) {
 
       {ai?.explanation ? (
         <Text
-          typography="heading4"
+          typography="heading5"
           style={{
             color: 'var(--color-fg-subtle)',
             fontWeight: 500,
             lineHeight: 1.62,
             whiteSpace: 'pre-line',
             wordBreak: 'keep-all',
+            padding: '0 var(--size-space-200)',
           }}
         >
           {ai.explanation}
@@ -422,19 +438,19 @@ function AnalysisTab({ detail }: { detail: DetailApplication }) {
         <VStack
           style={{
             gap: 'var(--size-space-100)',
-            padding: 'var(--size-space-250)',
+            padding: 'var(--size-space-200)',
             borderLeft: '3px solid var(--color-border-primary)',
             paddingLeft: 'var(--size-space-250)',
           }}
         >
           <Text
-            typography="body2"
+            typography="body1"
             style={{ color: 'var(--color-fg-subtle)', fontWeight: 700 }}
           >
             분석 근거
           </Text>
           <Text
-            typography="body2"
+            typography="body1"
             style={{
               color: 'var(--color-fg-subtle)',
               lineHeight: 1.6,
@@ -469,6 +485,9 @@ function ThumbnailCarousel({
   }>;
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>(
+    'right',
+  );
 
   if (images.length === 0) {
     return null;
@@ -489,19 +508,30 @@ function ThumbnailCarousel({
           overflow: 'hidden',
         }}
       >
-        <Image
-          key={activeImage.src}
-          src={activeImage.src}
-          alt={activeImage.alt}
-          fill
-          unoptimized
-          sizes="100vw"
+        <Box
+          key={`${activeImage.src}-${activeIndex}`}
           style={{
-            objectFit: activeImage.fit,
-            padding:
-              activeImage.fit === 'contain' ? 'var(--size-space-200)' : 0,
+            position: 'absolute',
+            inset: 0,
+            animation:
+              slideDirection === 'right'
+                ? 'slideInFromRightFade var(--duration-normal) var(--ease-out)'
+                : 'slideInFromLeftFade var(--duration-normal) var(--ease-out)',
           }}
-        />
+        >
+          <Image
+            src={activeImage.src}
+            alt={activeImage.alt}
+            fill
+            unoptimized
+            sizes="100vw"
+            style={{
+              objectFit: activeImage.fit,
+              padding:
+                activeImage.fit === 'contain' ? 'var(--size-space-200)' : 0,
+            }}
+          />
+        </Box>
 
         <Box
           style={{
@@ -530,18 +560,20 @@ function ThumbnailCarousel({
             <CarouselArrow
               direction="prev"
               disabled={activeIndex === 0}
-              onClick={() =>
-                setActiveIndex((current) => Math.max(current - 1, 0))
-              }
+              onClick={() => {
+                setSlideDirection('left');
+                setActiveIndex((current) => Math.max(current - 1, 0));
+              }}
             />
             <CarouselArrow
               direction="next"
               disabled={activeIndex === images.length - 1}
-              onClick={() =>
+              onClick={() => {
+                setSlideDirection('right');
                 setActiveIndex((current) =>
                   Math.min(current + 1, images.length - 1),
-                )
-              }
+                );
+              }}
             />
           </>
         ) : null}
@@ -564,7 +596,10 @@ function ThumbnailCarousel({
                 type="button"
                 aria-label={`${index + 1}번째 이미지 보기`}
                 aria-pressed={isActive}
-                onClick={() => setActiveIndex(index)}
+                onClick={() => {
+                  setSlideDirection(index < activeIndex ? 'left' : 'right');
+                  setActiveIndex(index);
+                }}
                 style={{
                   width: isActive
                     ? 'var(--size-space-300)'

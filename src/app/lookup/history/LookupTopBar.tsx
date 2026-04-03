@@ -34,6 +34,11 @@ export function LookupTopBar({
   tabs: LookupTabItem[];
   activeTab: string;
 }) {
+  const activeIndex = Math.max(
+    0,
+    tabs.findIndex((tab) => tab.key === activeTab),
+  );
+
   return (
     <Box
       style={{
@@ -87,10 +92,25 @@ export function LookupTopBar({
 
       <Box
         style={{
+          position: 'relative',
           display: 'grid',
           gridTemplateColumns: `repeat(${tabs.length}, 1fr)`,
+          borderBottom: '1px solid var(--color-bg-primary-100)',
         }}
       >
+        <Box
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            width: `${100 / tabs.length}%`,
+            height: '2px',
+            background: 'var(--color-border-primary)',
+            transform: `translateX(${activeIndex * 100}%)`,
+            transition: 'transform var(--duration-normal) var(--ease-spring)',
+          }}
+        />
         {tabs.map((tab) => {
           const isActive = tab.key === activeTab;
 
@@ -104,10 +124,9 @@ export function LookupTopBar({
                 justifyContent: 'center',
                 padding: 'var(--size-space-150) var(--size-space-150)',
                 border: 0,
-                borderBottom: isActive
-                  ? '2px solid var(--color-border-primary)'
-                  : '2px solid transparent',
                 background: 'transparent',
+                transition:
+                  'background-color var(--duration-fast) var(--ease-default)',
               }}
             >
               <Text
@@ -116,6 +135,8 @@ export function LookupTopBar({
                   color: isActive
                     ? 'var(--color-fg-primary)'
                     : 'var(--color-fg-placeholder)',
+                  transition:
+                    'color var(--duration-normal) var(--ease-default)',
                 }}
               >
                 {tab.label}

@@ -180,13 +180,14 @@ export function LookupHistoryList() {
   if (items.length === 0) {
     return (
       <Box
+        key={activeTab}
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           flex: 1,
           padding: 'var(--gap-2xl)',
-          animation: 'fadeIn var(--duration-normal) var(--ease-out)',
+          animation: 'tabContentEnter var(--duration-normal) var(--ease-out)',
         }}
       >
         <Text typography="body2" style={{ color: 'var(--color-fg-subtle)' }}>
@@ -198,6 +199,7 @@ export function LookupHistoryList() {
 
   return (
     <VStack
+      key={activeTab}
       style={{
         display: 'grid',
         flex: 1,
@@ -205,6 +207,7 @@ export function LookupHistoryList() {
         gap: 'var(--size-space-250)',
         padding:
           'var(--size-space-250) var(--size-space-250) var(--size-space-400)',
+        animation: 'tabContentEnter var(--duration-normal) var(--ease-out)',
       }}
     >
       {items.map((item, index) =>
