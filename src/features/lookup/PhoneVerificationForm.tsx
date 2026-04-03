@@ -9,6 +9,8 @@ import Input from '@/components/common/inputs/Input';
 import { useRequestCode, useVerifyCode } from '@/features/applications/queries';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { TokenResponse } from '@/types/auth';
+import { formatPhoneNumber } from '@/utils/formatPhoneNumber';
+import styles from './PhoneVerificationForm.module.css';
 
 function extractTokens(payload: unknown): TokenResponse | null {
   if (!payload || typeof payload !== 'object') return null;
@@ -95,7 +97,7 @@ export function PhoneVerificationForm() {
               color: 'var(--color-fg-normal)',
             }}
           >
-            휴대폰 인증번호로 조회
+            휴대폰 번호 인증
           </Text>
           <Text
             typography="body2"
@@ -114,7 +116,8 @@ export function PhoneVerificationForm() {
           <Input
             name="name"
             label="이름"
-            placeholder="이름을 입력해주세요"
+            placeholder="이름 입력"
+            inputClassName={styles.placeholderInput}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -130,9 +133,11 @@ export function PhoneVerificationForm() {
               <Input
                 name="phone"
                 label="휴대폰 번호"
-                placeholder="휴대폰 번호를 입력해주세요"
+                placeholder="휴대폰 번호 입력"
+                inputClassName={styles.placeholderInput}
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                inputMode="tel"
+                onChange={(e) => setPhone(formatPhoneNumber(e.target.value))}
               />
             </Box>
             <Box
@@ -169,7 +174,8 @@ export function PhoneVerificationForm() {
           <Input
             name="code"
             label="인증번호"
-            placeholder="인증번호 6자리를 입력해주세요"
+            placeholder="인증번호 6자리 입력"
+            inputClassName={styles.placeholderInput}
             value={code}
             onChange={(e) => setCode(e.target.value)}
           />

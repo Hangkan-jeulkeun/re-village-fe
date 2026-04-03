@@ -1,0 +1,7 @@
+.placeholderInput::placeholder {
+  color: var(--color-fg-placeholder);
+  font-size: var(--size-senior-label);
+  font-weight: 500;
+  line-height: 1.5;
+  opacity: 1;
+}
